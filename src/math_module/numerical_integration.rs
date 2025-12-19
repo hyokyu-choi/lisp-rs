@@ -1,4 +1,4 @@
-pub type IntegrationMethod = fn(fn(f64, f64) -> f64, f64, f64, f64) -> f64;
+pub type IntegrationMethod = fn(DerivativeEquation, f64, f64, f64) -> f64;
 pub type DerivativeEquation = fn(f64, f64) -> f64;
 
 /// Euler Method
@@ -8,7 +8,7 @@ pub type DerivativeEquation = fn(f64, f64) -> f64;
 /// (1)과 (2)를 연립 -> * y_i+1 = y_i + h*f(t, y)
 ///
 /// euler_method(f, t, y, h) -> y_i+1
-pub fn euler_method(f: fn(f64, f64) -> f64, t: f64, y: f64, h: f64) -> f64 {
+pub fn euler_method(f: DerivativeEquation, t: f64, y: f64, h: f64) -> f64 {
     y + h * f(t, y)
 }
 
@@ -22,7 +22,7 @@ pub fn euler_method(f: fn(f64, f64) -> f64, t: f64, y: f64, h: f64) -> f64 {
 /// y_i+1 = y_i + h/6 * (k1 + 2*k2 + 2*k3 + k4)
 ///
 /// RK4(f, t, y, h) -> y_i+1
-pub fn runge_kutta_4th(f: fn(f64, f64) -> f64, t: f64, y: f64, h: f64) -> f64 {
+pub fn runge_kutta_4th(f: DerivativeEquation, t: f64, y: f64, h: f64) -> f64 {
     let k1 = f(t, y);
     let k2 = f(t + h / 2.0, y + h * k1 / 2.0);
     let k3 = f(t + h / 2.0, y + h * k2 / 2.0);
@@ -37,7 +37,14 @@ pub fn print_results(ts: Vec<f64>, ys: Vec<f64>) {
     }
 }
 
-pub fn integrate_step(f: DerivativeEquation, integrate_method: IntegrationMethod, y0: f64, t_start: f64, t_end: f64, h: f64) -> (Vec<f64>, Vec<f64>) {
+pub fn integrate_step(
+    f: DerivativeEquation,
+    integrate_method: IntegrationMethod,
+    y0: f64,
+    t_start: f64,
+    t_end: f64,
+    h: f64,
+) -> (Vec<f64>, Vec<f64>) {
     let mut t = t_start; // 초기값
     let mut y = y0; // 초기값
     let mut ts = vec![t];
@@ -50,4 +57,3 @@ pub fn integrate_step(f: DerivativeEquation, integrate_method: IntegrationMethod
     }
     (ts, ys)
 }
-
