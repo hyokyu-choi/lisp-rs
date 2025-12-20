@@ -20,7 +20,7 @@ impl Vector2 {
     pub fn size(&self) -> usize {
         2
     }
-    pub fn inner_product(&self, other: Vector2) -> f64 {
+    pub fn inner_product(&self, other: Self) -> f64 {
         self.x * other.x + self.y * other.y
     }
     pub fn magnitude_square(&self) -> f64 {
@@ -29,7 +29,7 @@ impl Vector2 {
     pub fn magnitude(&self) -> f64 {
         self.magnitude_square().sqrt()
     }
-    pub fn normalize(&self) -> Vector2 {
+    pub fn normalize(&self) -> Self {
         *self / self.magnitude()
     }
 }

@@ -70,19 +70,19 @@ pub fn runge_kutta_4th_2(f: DerivativeEquation<Vector2>, t: f64, u: Vector2, h: 
     u + h / 6.0 * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
 }
 
-pub fn print_results(ts: Vec<f64>, ys: Vec<f64>, h: f64) {
+pub fn print_results(ts: Vec<f64>, ys: Vec<f64>, h: f64) -> () {
     println!("   t :            y");
     for i in 0..ts.len() {
-        if i as i64 % (0.5/h) as i64 == 0 {
+        if i as i64 % (0.5 / h) as i64 == 0 {
             println!("{:.2} : {:.10}", ts[i], ys[i])
         }
     }
 }
 
-pub fn print_results_2(ts: Vec<f64>, us: Vec<Vector2>, h: f64) {
+pub fn print_results_2(ts: Vec<f64>, us: Vec<Vector2>, h: f64) -> () {
     println!("   t :            u");
     for i in 0..ts.len() {
-        if i as i64 % (0.5/h) as i64 == 0 {
+        if i as i64 % (0.5 / h) as i64 == 0 {
             println!("{:.2} : {}", ts[i], us[i])
         }
     }
@@ -133,7 +133,7 @@ pub fn integrate_step_2(
 /// y' - y = 0
 /// y = Ae^t
 /// dy/dt = y
-pub fn test(h: f64) {
+pub fn test(h: f64) -> () {
     let test_func = |_t: f64, y: f64| -> f64 { y };
     print_title("Euler Method");
     let (ts, ys) = integrate_step(test_func, euler_method, 1.0, 0.0, 2.0, h);
@@ -149,7 +149,7 @@ pub fn test(h: f64) {
 /// dy'/dt = -u0
 /// y = A*sin(t) + B*cos(t)
 /// y' = A*cos(t) - B*sin(t)
-pub fn test_2(h: f64) {
+pub fn test_2(h: f64) -> () {
     let test_func_2 = |_t: f64, u: Vector2| -> f64 { -u.x() };
 
     print_title("Euler Method");
@@ -158,7 +158,7 @@ pub fn test_2(h: f64) {
         euler_method_2,
         Vector2::new(0.0, 1.0),
         0.0,
-        PI / 2.0,
+        2.0 * PI,
         h,
     );
     print_results_2(ts, ys, h);
@@ -170,7 +170,7 @@ pub fn test_2(h: f64) {
         runge_kutta_4th_2,
         Vector2::new(0.0, 1.0),
         0.0,
-        PI / 2.0,
+        2.0 * PI,
         h,
     );
     print_results_2(ts, ys, h);
