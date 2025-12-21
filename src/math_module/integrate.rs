@@ -7,7 +7,13 @@ pub trait DiffEqSystem {
 }
 
 pub trait Integrator {
-    fn step<S>(system: &S, t: Scalar, y: S::Vector, y_prime: S::Vector, h: Scalar) -> (S::Vector, S::Vector)
+    fn step<S>(
+        system: &S,
+        t: Scalar,
+        y: S::Vector,
+        y_prime: S::Vector,
+        h: Scalar,
+    ) -> (S::Vector, S::Vector)
     where
         S: DiffEqSystem;
 }
@@ -16,16 +22,31 @@ pub struct EulerMethod;
 pub struct RK4Method;
 
 impl Integrator for EulerMethod {
-    fn step<S>(system: &S, t: Scalar, y: S::Vector, y_prime: S::Vector, h: Scalar) -> (S::Vector, S::Vector)
+    fn step<S>(
+        system: &S,
+        t: Scalar,
+        y: S::Vector,
+        y_prime: S::Vector,
+        h: Scalar,
+    ) -> (S::Vector, S::Vector)
     where
         S: DiffEqSystem,
     {
-        (y + y_prime * h, y_prime + system.derivative(t, y, y_prime) * h)
+        (
+            y + y_prime * h,
+            y_prime + system.derivative(t, y, y_prime) * h,
+        )
     }
 }
 
 impl Integrator for RK4Method {
-    fn step<S>(system: &S, t: Scalar, y: S::Vector, y_prime: S::Vector, h: Scalar) -> (S::Vector, S::Vector)
+    fn step<S>(
+        system: &S,
+        t: Scalar,
+        y: S::Vector,
+        y_prime: S::Vector,
+        h: Scalar,
+    ) -> (S::Vector, S::Vector)
     where
         S: DiffEqSystem,
     {

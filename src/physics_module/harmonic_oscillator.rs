@@ -1,4 +1,4 @@
-use crate::math_module::core::{Scalar};
+use crate::math_module::core::Scalar;
 use crate::math_module::integrate::{DiffEqSystem, EulerMethod, Integrator, RK4Method};
 
 struct SHO {
@@ -21,7 +21,10 @@ mod tests {
     pub fn sho_test() {
         type Method = RK4Method;
 
-        let sho_ode = SHO{m: Scalar(1.0), k: Scalar(1.0)};
+        let sho_ode = SHO {
+            m: Scalar(1.0),
+            k: Scalar(1.0),
+        };
 
         let t0 = Scalar(0.0);
         let y0 = Scalar(0.0);

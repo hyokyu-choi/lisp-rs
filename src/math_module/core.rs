@@ -21,10 +21,7 @@ pub trait LinearSpace:
 }
 
 pub trait ScalarSpace:
-Sized
-+ LinearSpace
-+ Mul<Vector2, Output = Vector2>
-+ PartialOrd<Self>
+    Sized + LinearSpace + Mul<Vector2, Output = Vector2> + PartialOrd<Self>
 {
     fn get(&self) -> f64;
     fn abs(&self) -> Self;
@@ -136,23 +133,13 @@ impl fmt::Debug for Scalar {
 
 impl fmt::Display for Vector2 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Vector2({:.6}, {:.6})",
-            self.0.0,
-            self.1.0
-        )
+        write!(f, "Vector2({:.6}, {:.6})", self.0.0, self.1.0)
     }
 }
 
 impl fmt::Debug for Vector2 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Vector2({:.6}, {:.6})",
-            self.0.0,
-            self.1.0
-        )
+        write!(f, "Vector2({:.6}, {:.6})", self.0.0, self.1.0)
     }
 }
 

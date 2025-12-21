@@ -7,5 +7,4 @@ mod math_module {
     pub mod integrate;
 }
 
-fn main() {
-}
+fn main() {}
