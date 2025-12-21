@@ -1,5 +1,4 @@
-# Rust로 물리 시뮬레이션 구현
-## 수치적분 계산기
+# LISP: Linear Integrator for Simulating Physics
 
 - [x] Euler's method
 - [x] RK4
@@ -15,5 +14,3 @@
     - [ ] 무한 퍼텐셜 우물
     - [ ] 유한 퍼텐셜 우물
     - [ ] **수소원자**
-
-
