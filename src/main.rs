@@ -29,9 +29,7 @@ fn main() {
 
     let mut sho_solver: Solver<RK4Method, DampedHarmonicOscillator> = Solver::new(RK4Method, dho_ode, y0, y0_prime);
     sho_solver.run(h, steps);
-    let ts: Vec<f64> = sho_solver.get_ts_f64();
-    let ys: Vec<f64> = sho_solver.get_ys_f64();
-    let ys_prime: Vec<f64> = sho_solver.get_ys_prime_f64();
+    let (ts, ys, ys_prime): (Vec<f64>, Vec<f64>, Vec<f64>) = sho_solver.get_results_f64();
 
     let _ = plot_one(
         "Damped Harmonic Oscillation",

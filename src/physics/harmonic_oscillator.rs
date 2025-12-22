@@ -45,9 +45,7 @@ mod tests {
 
         let mut sho_solver = Solver::new(RK4Method, sho_ode, y0, y0_prime);
         sho_solver.run(h, steps);
-        let ts = sho_solver.get_ts_f64();
-        let ys = sho_solver.get_ys_f64();
-        let ys_prime = sho_solver.get_ys_prime_f64();
+        let (ts, ys, ys_prime) = sho_solver.get_results_f64();
 
         for ((t, y), y_prime) in ts.iter().zip(ys).zip(ys_prime) {
             println!("({:.2}, {:.6}, {:.6})", t, y, y_prime);
@@ -70,11 +68,9 @@ mod tests {
         let h = Scalar(0.1);
         let steps = 32;
 
-        let mut sho_solver = Solver::new(RK4Method, dho_ode, y0, y0_prime);
-        sho_solver.run(h, steps);
-        let ts = sho_solver.get_ts_f64();
-        let ys = sho_solver.get_ys_f64();
-        let ys_prime = sho_solver.get_ys_prime_f64();
+        let mut dho_solver = Solver::new(RK4Method, dho_ode, y0, y0_prime);
+        dho_solver.run(h, steps);
+        let (ts, ys, ys_prime) = dho_solver.get_results_f64();
 
         for ((t, y), y_prime) in ts.iter().zip(ys).zip(ys_prime) {
             println!("({:.2}, {:.6}, {:.6})", t, y, y_prime);

@@ -130,23 +130,42 @@ where
         self.results.update(self.t, self.y, self.y_prime);
     }
 
-    pub fn get_results(&self) -> &Results<S> {
-        &self.results
+    // pub fn get_results(&self) -> &Results<S> {
+    //     &self.results
+    // }
+    pub fn get_results(&self) -> (Vec<Scalar>, Vec<S::Vector>, Vec<S::Vector>) {
+        (self.get_ts(), self.get_ys(), self.get_ys_prime())
     }
 
-    pub fn get_ts_f64(&self) -> Vec<f64> {
+    pub fn get_results_f64(&self) -> (Vec<<Scalar as LinearSpace>::Value>, Vec<<S::Vector as LinearSpace>::Value>, Vec<<S::Vector as LinearSpace>::Value>) {
+        (self.get_ts_f64(), self.get_ys_f64(), self.get_ys_prime_f64())
+    }
+
+    fn get_ts(&self) -> Vec<Scalar> {
+        self.results.get_ts()
+    }
+
+    fn get_ts_f64(&self) -> Vec<f64> {
         self.results.get_ts_f64()
     }
 
-    pub fn get_ys_f64(&self) -> Vec<<S::Vector as LinearSpace>::Value> {
+    fn get_ys(&self) -> Vec<S::Vector> {
+        self.results.get_ys()
+    }
+
+    fn get_ys_f64(&self) -> Vec<<S::Vector as LinearSpace>::Value> {
         self.results.get_ys_f64()
     }
 
-    pub fn get_ys_prime_f64(&self) -> Vec<<S::Vector as LinearSpace>::Value> {
+    fn get_ys_prime(&self) -> Vec<S::Vector> {
+        self.results.get_ys_prime()
+    }
+
+    fn get_ys_prime_f64(&self) -> Vec<<S::Vector as LinearSpace>::Value> {
         self.results.get_ys_prime_f64()
     }
 
-    pub fn get_current(&self) -> (Scalar, S::Vector, S::Vector) {
+    fn get_current(&self) -> (Scalar, S::Vector, S::Vector) {
         (self.t, self.y, self.y_prime)
     }
 }
