@@ -1,5 +1,5 @@
+use crate::math_module::core::Scalar;
 use std::fmt;
-use crate::math_module::core::{Scalar};
 
 #[derive(Clone, Copy)]
 pub struct Particle {

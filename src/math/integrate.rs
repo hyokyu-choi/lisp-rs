@@ -54,19 +54,27 @@ impl<S: System> Results<S> {
         self.ys_prime.push(y_prime);
     }
 
+    pub fn get(&self, index: usize) -> (Scalar, S::Vector, S::Vector) {
+        (self.ts[index], self.ys[index], self.ys_prime[index])
+    }
+
+    pub fn get_f64(&self, index: usize) -> (f64, <S::Vector as LinearSpace>::Value, <S::Vector as LinearSpace>::Value) {
+        (self.ts[index].get_value(), self.ys[index].get_value(), self.ys_prime[index].get_value())
+    }
+
     pub fn get_ts(&self) -> Vec<Scalar> {
         self.ts.clone()
     }
 
-    pub fn get_ts_f64(&self) -> Vec<f64> {
-        self.ts.iter().map(|t| t.get_value()[0]).collect()
+    pub fn get_ts_f64(&self) -> Vec<<Scalar as LinearSpace>::Value> {
+        self.ts.iter().map(|t| t.get_value()).collect()
     }
 
     pub fn get_ys(&self) -> Vec<S::Vector> {
         self.ys.clone()
     }
 
-    pub fn get_ys_f64(&self) -> Vec<Vec<f64>> {
+    pub fn get_ys_f64(&self) -> Vec<<S::Vector as LinearSpace>::Value> {
         self.ys.iter().map(|y| y.get_value()).collect()
     }
 
@@ -74,7 +82,7 @@ impl<S: System> Results<S> {
         self.ys_prime.clone()
     }
 
-    pub fn get_ys_prime_f64(&self) -> Vec<Vec<f64>> {
+    pub fn get_ys_prime_f64(&self) -> Vec<<S::Vector as LinearSpace>::Value> {
         self.ys_prime.iter().map(|y| y.get_value()).collect()
     }
 }
@@ -112,19 +120,19 @@ where
     }
 
     // TODO: implement
-    // pub fn get_results(&self) -> Results<S> {
-    //     &self.results
-    // }
+    pub fn get_results(&self) -> &Results<S> {
+        &self.results
+    }
 
     pub fn get_ts_f64(&self) -> Vec<f64> {
         self.results.get_ts_f64()
     }
 
-    pub fn get_ys_f64(&self) -> Vec<Vec<f64>> {
+    pub fn get_ys_f64(&self) -> Vec<<S::Vector as LinearSpace>::Value> {
         self.results.get_ys_f64()
     }
 
-    pub fn get_ys_prime_f64(&self) -> Vec<Vec<f64>> {
+    pub fn get_ys_prime_f64(&self) -> Vec<<S::Vector as LinearSpace>::Value> {
         self.results.get_ys_prime_f64()
     }
 }
@@ -145,8 +153,8 @@ impl Integrator for EulerMethod {
         S: System,
     {
         (
-            y + y_prime * h,
-            y_prime + system.derivative(t, y, y_prime) * h,
+            y + h * y_prime,
+            y_prime + h * system.derivative(t, y, y_prime),
         )
     }
 }
@@ -165,12 +173,12 @@ impl Integrator for RK4Method {
     {
         let k11 = y_prime;
         let k12 = system.derivative(t, y, y_prime);
-        let k21 = y_prime + k12 * (h / 2.0);
-        let k22 = system.derivative(t + h / 2.0, y + k11 * (h / 2.0), y_prime + k12 * (h / 2.0));
+        let k21 = y_prime + h * (k12 / 2.0);
+        let k22 = system.derivative(t + h / 2.0, y + h * (k12 / 2.0), y_prime + h * (k12 / 2.0));
         let k31 = y_prime + k22 * (h / 2.0);
-        let k32 = system.derivative(t + h / 2.0, y + k21 * (h / 2.0), y_prime + k22 * (h / 2.0));
+        let k32 = system.derivative(t + h / 2.0, y + h * (k21 / 2.0), y_prime + h * (k22 / 2.0));
         let k41 = y_prime + k32 * h;
-        let k42 = system.derivative(t + h, y + k31 * h, y_prime + k32 * h);
+        let k42 = system.derivative(t + h, y + h * k31, y_prime + h * k32);
         (
             y + (k11 + k21 * 2.0 + k31 * 2.0 + k41) * (h / 6.0),
             y_prime + (k12 + k22 * 2.0 + k32 * 2.0 + k42) * (h / 6.0),

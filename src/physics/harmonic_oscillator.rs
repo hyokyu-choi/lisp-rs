@@ -1,5 +1,5 @@
-use crate::math_module::core::Scalar;
-use crate::math_module::integrate::{EulerMethod, Integrator, RK4Method, System};
+use crate::math::core::Scalar;
+use crate::math::integrate::{EulerMethod, RK4Method, System};
 
 pub struct SHO {
     pub omega_square: Scalar,
@@ -26,9 +26,7 @@ impl System for DHO {
 
 #[cfg(test)]
 mod tests {
-    use std::iter::zip;
-
-    use crate::math_module::integrate::Solver;
+    use crate::math::integrate::Solver;
 
     use super::*;
 
@@ -52,7 +50,7 @@ mod tests {
         let ys_prime = sho_solver.get_ys_prime_f64();
 
         for ((t, y), y_prime) in ts.iter().zip(ys).zip(ys_prime) {
-            println!("({:.2}, {:.6}, {:.6})", t, y[0], y_prime[0]);
+            println!("({:.2}, {:.6}, {:.6})", t, y, y_prime);
         }
 
         assert!(false);
@@ -79,7 +77,7 @@ mod tests {
         let ys_prime = sho_solver.get_ys_prime_f64();
 
         for ((t, y), y_prime) in ts.iter().zip(ys).zip(ys_prime) {
-            println!("({:.2}, {:.6}, {:.6})", t, y[0], y_prime[0]);
+            println!("({:.2}, {:.6}, {:.6})", t, y, y_prime);
         }
 
         assert!(false);
