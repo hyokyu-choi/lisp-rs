@@ -130,7 +130,6 @@ where
         self.results.update(self.t, self.y, self.y_prime);
     }
 
-    // TODO: implement
     pub fn get_results(&self) -> &Results<S> {
         &self.results
     }
