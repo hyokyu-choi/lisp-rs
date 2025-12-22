@@ -1,4 +1,4 @@
-use crate::math::core::Scalar;
+use crate::math::core::{Scalar, ScalarSpace};
 use crate::math::integrate::{EulerMethod, RK4Method, System};
 
 pub struct SimpleHarmonicOscillator {
@@ -6,8 +6,15 @@ pub struct SimpleHarmonicOscillator {
 }
 
 pub struct DampedHarmonicOscillator {
-    pub omega_square: Scalar,
+    pub k: Scalar,
     pub b: Scalar,
+}
+
+pub struct DrivenHarmonicOscillator {
+    pub k: Scalar,
+    pub b: Scalar,
+    pub f0: Scalar,
+    pub omega: Scalar,
 }
 
 impl System for SimpleHarmonicOscillator {
@@ -20,7 +27,14 @@ impl System for SimpleHarmonicOscillator {
 impl System for DampedHarmonicOscillator {
     type Vector = Scalar;
     fn derivative(&self, _t: Scalar, y: Self::Vector, y_prime: Self::Vector) -> Self::Vector {
-        -self.omega_square * y - self.b * y_prime
+        -self.k * y - self.b * y_prime
+    }
+}
+
+impl System for DrivenHarmonicOscillator {
+    type Vector = Scalar;
+    fn derivative(&self, t: Scalar, y: Self::Vector, y_prime: Self::Vector) -> Self::Vector {
+        self.f0 * (self.omega * t).cos() - self.k * y - self.b * y_prime
     }
 }
 
@@ -59,7 +73,7 @@ mod tests {
         type Method = RK4Method;
 
         let dho_ode = DampedHarmonicOscillator {
-            omega_square: Scalar(1.0),
+            k: Scalar(1.0),
             b: Scalar(10.0),
         };
 

@@ -29,6 +29,8 @@ pub trait ScalarSpace:
 {
     fn abs(&self) -> Self;
     fn sqrt(&self) -> Self;
+    fn sin(&self) -> Self;
+    fn cos(&self) -> Self;
 }
 
 pub trait VectorSpace: Sized + LinearSpace + Index<usize> + IndexMut<usize> {
@@ -96,6 +98,12 @@ impl ScalarSpace for Scalar {
     }
     fn sqrt(&self) -> Self {
         Self(self.0.sqrt())
+    }
+    fn sin(&self) -> Self {
+        Self(self.0.sin())
+    }
+    fn cos(&self) -> Self {
+        Self(self.0.cos())
     }
 }
 

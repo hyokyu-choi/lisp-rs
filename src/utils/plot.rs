@@ -1,11 +1,13 @@
 use plotters::prelude::*;
 
 pub fn plot_one(
-    title: &str,
+    title: String,
     ts: Vec<f64>,
     datas: Vec<Vec<f64>>,
-    labels: Vec<&str>,
-    save_file: &str,
+    x_range: [f32; 2],
+    y_range: [f32; 2],
+    labels: Vec<String>,
+    save_file: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let root = BitMapBackend::new(&save_file, (1024, 768)).into_drawing_area();
     root.fill(&WHITE)?;
@@ -15,7 +17,7 @@ pub fn plot_one(
         .x_label_area_size(30)
         .y_label_area_size(30)
         .caption(title, ("sans-serif", 50).into_font())
-        .build_cartesian_2d(0.0f32..10.0f32, -2.0f32..2.0f32)?;
+        .build_cartesian_2d(x_range[0]..x_range[1], y_range[0]..y_range[1])?;
 
     chart.configure_mesh().draw()?;
 
@@ -27,7 +29,7 @@ pub fn plot_one(
                 std::iter::zip(ts_32, data_32),
                 &Palette99::pick(idx),
             ))?
-            .label(labels[idx])
+            .label(&labels[idx])
             .legend(move |(x, y)| {
                 PathElement::new(vec![(x, y), (x + 20, y)], &Palette99::pick(idx))
             });
