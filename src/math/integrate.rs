@@ -130,15 +130,22 @@ where
         self.results.update(self.t, self.y, self.y_prime);
     }
 
-    // pub fn get_results(&self) -> &Results<S> {
-    //     &self.results
-    // }
     pub fn get_results(&self) -> (Vec<Scalar>, Vec<S::Vector>, Vec<S::Vector>) {
         (self.get_ts(), self.get_ys(), self.get_ys_prime())
     }
 
-    pub fn get_results_f64(&self) -> (Vec<<Scalar as LinearSpace>::Value>, Vec<<S::Vector as LinearSpace>::Value>, Vec<<S::Vector as LinearSpace>::Value>) {
-        (self.get_ts_f64(), self.get_ys_f64(), self.get_ys_prime_f64())
+    pub fn get_results_f64(
+        &self,
+    ) -> (
+        Vec<<Scalar as LinearSpace>::Value>,
+        Vec<<S::Vector as LinearSpace>::Value>,
+        Vec<<S::Vector as LinearSpace>::Value>,
+    ) {
+        (
+            self.get_ts_f64(),
+            self.get_ys_f64(),
+            self.get_ys_prime_f64(),
+        )
     }
 
     fn get_ts(&self) -> Vec<Scalar> {
@@ -233,7 +240,7 @@ mod tests {
     impl System for TestHarmonicOscillator {
         type Vector = Scalar;
 
-        fn derivative(&self, _t: Scalar, y: Self::Vector, _y_prime: Self::Vector) -> Self::Vector{
+        fn derivative(&self, _t: Scalar, y: Self::Vector, _y_prime: Self::Vector) -> Self::Vector {
             -y
         }
     }
@@ -254,7 +261,11 @@ mod tests {
         let exact_y = Scalar::new(1.0f64.cos());
         let error = (y - exact_y).abs();
 
-        assert!(error < Scalar::new(EPS), "Euler method error too large: {}", error);
+        assert!(
+            error < Scalar::new(EPS),
+            "Euler method error too large: {}",
+            error
+        );
     }
 
     #[test]
@@ -273,7 +284,11 @@ mod tests {
         let exact_y = Scalar::new(1.0f64.cos());
         let error = (y - exact_y).abs();
 
-        assert!(error < Scalar::new(EPS), "RK4 method error too large: {}", error);
+        assert!(
+            error < Scalar::new(EPS),
+            "RK4 method error too large: {}",
+            error
+        );
     }
 
     #[test]
@@ -299,7 +314,11 @@ mod tests {
         let error_euler = (y_euler - exact_y).abs();
         let error_rk4 = (y_rk4 - exact_y).abs();
 
-        assert!(error_rk4 < error_euler, "RK4 method error are large than Euler method. RK4: {}  Euler: {}", error_rk4, error_euler)
-
+        assert!(
+            error_rk4 < error_euler,
+            "RK4 method error are large than Euler method. RK4: {}  Euler: {}",
+            error_rk4,
+            error_euler
+        )
     }
 }

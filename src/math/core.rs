@@ -386,13 +386,24 @@ mod tests {
 
     fn assert_scalar_eq(a: Scalar, b: Scalar) {
         let diff = (a - b).abs();
-        assert!(diff < Scalar::new(EPS), "Assertion failed: {:?} != {:?} (diff: {})", a, b, diff);
+        assert!(
+            diff < Scalar::new(EPS),
+            "Assertion failed: {:?} != {:?} (diff: {})",
+            a,
+            b,
+            diff
+        );
     }
 
     fn assert_vector_eq(a: Vector2, b: Vector2) {
         let diff_e0 = (a - b)[0].abs();
         let diff_e1 = (a - b)[1].abs();
-        assert!(diff_e0 < Scalar::new(EPS) && diff_e1 < Scalar::new(EPS), "Assertion failed: {:?} != {:?}", a, b)
+        assert!(
+            diff_e0 < Scalar::new(EPS) && diff_e1 < Scalar::new(EPS),
+            "Assertion failed: {:?} != {:?}",
+            a,
+            b
+        )
     }
 
     #[test]
@@ -405,7 +416,7 @@ mod tests {
         assert_scalar_eq(a - b, Scalar::new(-1.0));
         assert_scalar_eq(a * b, Scalar::new(6.0));
         assert_scalar_eq(a / b, Scalar::new(2.0 / 3.0));
-        
+
         // Neg
         assert_scalar_eq(-a, Scalar::new(-2.0));
     }
@@ -437,7 +448,7 @@ mod tests {
         assert_vector_eq(v1 + v2, Vector2::new(4.0, 6.0));
         assert_vector_eq(v1 - v2, Vector2::new(-2.0, -2.0));
         assert_vector_eq(v1 * v2, Vector2::new(3.0, 8.0));
-        
+
         // Neg
         assert_vector_eq(-v1, Vector2::new(-1.0, -2.0));
     }
@@ -453,10 +464,10 @@ mod tests {
         assert_vector_eq(s * v, Vector2::new(2.0, 4.0));
         assert_vector_eq(v * f, Vector2::new(3.0, 6.0));
         assert_vector_eq(f * v, Vector2::new(3.0, 6.0));
-        
+
         // Div
-        assert_vector_eq(v / s, Vector2::new(1.0/2.0, 1.0));
-        assert_vector_eq(v / f, Vector2::new(1.0/3.0, 2.0/3.0));
+        assert_vector_eq(v / s, Vector2::new(1.0 / 2.0, 1.0));
+        assert_vector_eq(v / f, Vector2::new(1.0 / 3.0, 2.0 / 3.0));
     }
 
     #[test]
@@ -493,7 +504,7 @@ mod tests {
 
         // Parallel
         assert_scalar_eq(v1.inner_product(v3), Scalar::new(2.0));
-        
+
         // Self inner product
         assert_scalar_eq(v3.inner_product(v3), v3.magnitude_square());
     }

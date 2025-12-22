@@ -27,7 +27,8 @@ fn main() {
     let h: Scalar = Scalar(0.01);
     let steps: usize = 1000;
 
-    let mut sho_solver: Solver<RK4Method, DampedHarmonicOscillator> = Solver::new(RK4Method, dho_ode, y0, y0_prime);
+    let mut sho_solver: Solver<RK4Method, DampedHarmonicOscillator> =
+        Solver::new(RK4Method, dho_ode, y0, y0_prime);
     sho_solver.run(h, steps);
     let (ts, ys, ys_prime): (Vec<f64>, Vec<f64>, Vec<f64>) = sho_solver.get_results_f64();
 
