@@ -1,23 +1,23 @@
 use crate::math::core::Scalar;
 use crate::math::integrate::{EulerMethod, RK4Method, System};
 
-pub struct SHO {
+pub struct SimpleHarmonicOscillator {
     pub omega_square: Scalar,
 }
 
-pub struct DHO {
+pub struct DampedHarmonicOscillator {
     pub omega_square: Scalar,
     pub b: Scalar,
 }
 
-impl System for SHO {
+impl System for SimpleHarmonicOscillator {
     type Vector = Scalar;
     fn derivative(&self, _t: Scalar, y: Self::Vector, _y_prime: Self::Vector) -> Self::Vector {
         -self.omega_square * y
     }
 }
 
-impl System for DHO {
+impl System for DampedHarmonicOscillator {
     type Vector = Scalar;
     fn derivative(&self, _t: Scalar, y: Self::Vector, y_prime: Self::Vector) -> Self::Vector {
         -self.omega_square * y - self.b * y_prime
@@ -34,7 +34,7 @@ mod tests {
     pub fn sho_test() {
         type Method = RK4Method;
 
-        let sho_ode = SHO {
+        let sho_ode = SimpleHarmonicOscillator {
             omega_square: Scalar(1.0),
         };
 
@@ -60,7 +60,7 @@ mod tests {
     pub fn dho_test() {
         type Method = RK4Method;
 
-        let dho_ode = DHO {
+        let dho_ode = DampedHarmonicOscillator {
             omega_square: Scalar(1.0),
             b: Scalar(10.0),
         };
