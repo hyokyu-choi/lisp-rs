@@ -147,6 +147,18 @@ impl<const N: usize> InnerProduct for Vector<N> {
     }
 }
 
+impl OuterProduct for Vector<3> {
+    fn outer_product(&self, other: Self) -> Self {
+        Self {
+            data: [
+                self.data[1]*other.data[2] - self.data[2]*self.data[1],
+                self.data[2]*other.data[0] - self.data[0]*self.data[2],
+                self.data[0]*other.data[1] - self.data[1]*self.data[0],
+            ]
+        }
+    }
+}
+
 impl fmt::Display for Scalar {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Scalar({:.6})", self.0)
