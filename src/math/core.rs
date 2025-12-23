@@ -47,7 +47,7 @@ pub trait VectorSpace<S: ScalarSpace, const N: usize>:
     fn normalize(&self) -> Self;
 }
 
-pub trait CrossProduct<const N: usize>: VectorSpace<f64, N> {
+pub trait CrossProduct<S: ScalarSpace, const N: usize>: VectorSpace<S, N> {
     fn cross(&self, other: Self) -> Self;
 }
 
@@ -162,7 +162,7 @@ impl<S: ScalarSpace, const N: usize> InnerProduct<S> for Vector<S, N> {
     }
 }
 
-impl CrossProduct<3> for Vector<f64, 3> {
+impl<S: ScalarSpace> CrossProduct<S, 3> for Vector<S, 3> {
     fn cross(&self, other: Self) -> Self {
         Self {
             data: [
