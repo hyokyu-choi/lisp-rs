@@ -46,8 +46,8 @@ pub trait OuterProduct: VectorSpace {
 #[derive(Clone, Copy, PartialEq, PartialOrd)]
 pub struct Scalar(f64);
 #[derive(Clone, Copy, PartialEq)]
-pub struct Vector2 {
-    data: [f64; 2],
+pub struct Vector<const N: usize> {
+    data: [f64; N],
 }
 
 impl LinearSpace for Scalar {
@@ -88,17 +88,17 @@ impl ScalarSpace for Scalar {
     }
 }
 
-impl LinearSpace for Vector2 {
-    type Data = [f64; 2];
+impl<const N: usize> LinearSpace for Vector<N> {
+    type Data = [f64; N];
 
-    fn new([e0, e1]: Self::Data) -> Self {
-        Self { data: [e0, e1] }
+    fn new(data: Self::Data) -> Self {
+        Self { data: data }
     }
     fn zero() -> Self {
-        Self::new([0.0, 0.0])
+        Self::new([0.0; N])
     }
     fn size(&self) -> usize {
-        2
+        N
     }
     fn get_data(&self) -> Self::Data {
         self.data
@@ -108,22 +108,22 @@ impl LinearSpace for Vector2 {
     }
 }
 
-impl VectorSpace for Vector2 {
+impl<const N: usize> VectorSpace for Vector<N> {
     fn magnitude_square(&self) -> f64 {
-        (self.data[0] * self.data[0]) + (self.data[1] * self.data[1])
+        self.data.iter().map(|e| e * e).sum()
     }
     fn magnitude(&self) -> f64 {
         self.magnitude_square().sqrt()
     }
     fn normalize(&self) -> Self {
-        match self.magnitude() {
+        match self.magnitude_square() {
             0.0 => Self::zero(),
             _ => *self / self.magnitude(),
         }
     }
 }
 
-impl Index<usize> for Vector2 {
+impl<const N: usize> Index<usize> for Vector<N> {
     type Output = f64;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -131,15 +131,19 @@ impl Index<usize> for Vector2 {
     }
 }
 
-impl IndexMut<usize> for Vector2 {
+impl<const N: usize> IndexMut<usize> for Vector<N> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.data[index]
     }
 }
 
-impl InnerProduct for Vector2 {
+impl<const N: usize> InnerProduct for Vector<N> {
     fn inner_product(&self, other: Self) -> f64 {
-        (self.data[0] * other.data[0]) + (self.data[1] * other.data[1])
+        self.data
+            .iter()
+            .zip(other.data.iter())
+            .map(|(e1, e2)| e1 * e2)
+            .sum()
     }
 }
 
@@ -155,15 +159,15 @@ impl fmt::Debug for Scalar {
     }
 }
 
-impl fmt::Display for Vector2 {
+impl<const N: usize> fmt::Display for Vector<N> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Vector2({:.6}, {:.6})", self.data[0], self.data[1])
+        write!(f, "Vector<N>({:.6}, {:.6})", self.data[0], self.data[1])
     }
 }
 
-impl fmt::Debug for Vector2 {
+impl<const N: usize> fmt::Debug for Vector<N> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Vector2({:.6}, {:.6})", self.data[0], self.data[1])
+        write!(f, "Vector<N>({:.6}, {:.6})", self.data[0], self.data[1])
     }
 }
 
@@ -175,12 +179,12 @@ impl Neg for Scalar {
     }
 }
 
-impl Neg for Vector2 {
+impl<const N: usize> Neg for Vector<N> {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
         Self {
-            data: [-self.data[0], -self.data[1]],
+            data: self.data.map(|e| -e),
         }
     }
 }
@@ -193,12 +197,12 @@ impl Add for Scalar {
     }
 }
 
-impl Add for Vector2 {
+impl<const N: usize> Add for Vector<N> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
         Self {
-            data: [self.data[0] + rhs.data[0], self.data[1] + rhs.data[1]],
+            data: std::array::from_fn(|i| self.data[i] + rhs.data[i]),
         }
     }
 }
@@ -211,12 +215,12 @@ impl Sub for Scalar {
     }
 }
 
-impl Sub for Vector2 {
+impl<const N: usize> Sub for Vector<N> {
     type Output = Self;
 
-    fn sub(self, rhs: Vector2) -> Self::Output {
+    fn sub(self, rhs: Vector<N>) -> Self::Output {
         Self {
-            data: [self.data[0] - rhs.data[0], self.data[1] - rhs.data[1]],
+            data: std::array::from_fn(|i| self.data[i] - rhs.data[i]),
         }
     }
 }
@@ -229,12 +233,12 @@ impl Mul<f64> for Scalar {
     }
 }
 
-impl Mul<f64> for Vector2 {
+impl<const N: usize> Mul<f64> for Vector<N> {
     type Output = Self;
 
     fn mul(self, rhs: f64) -> Self::Output {
         Self {
-            data: [self.data[0] * rhs, self.data[1] * rhs],
+            data: std::array::from_fn(|i| self.data[i] * rhs),
         }
     }
 }
@@ -247,12 +251,12 @@ impl Div<f64> for Scalar {
     }
 }
 
-impl Div<f64> for Vector2 {
+impl<const N: usize> Div<f64> for Vector<N> {
     type Output = Self;
 
     fn div(self, rhs: f64) -> Self::Output {
         Self {
-            data: [self.data[0] / rhs, self.data[1] / rhs],
+            data: std::array::from_fn(|i| self.data[i] / rhs),
         }
     }
 }
@@ -265,17 +269,17 @@ impl Mul<Scalar> for f64 {
     }
 }
 
-impl Mul<Vector2> for f64 {
-    type Output = Vector2;
+impl<const N: usize> Mul<Vector<N>> for f64 {
+    type Output = Vector<N>;
 
-    fn mul(self, rhs: Vector2) -> Self::Output {
-        Vector2 {
-            data: [self * rhs.data[0], self * rhs.data[1]],
+    fn mul(self, rhs: Vector<N>) -> Self::Output {
+        Self::Output {
+            data: std::array::from_fn(|i| self * rhs.data[i]),
         }
     }
 }
 
-impl Mul<Self> for Vector2 {
+impl<const N: usize> Mul<Self> for Vector<N> {
     type Output = f64;
 
     fn mul(self, rhs: Self) -> Self::Output {
@@ -287,120 +291,89 @@ impl Mul<Self> for Vector2 {
 mod tests {
     use super::*;
 
-    const EPS: f64 = 1e-10;
-
-    fn assert_f64_eq(a: f64, b: f64) {
-        let diff = (a - b).abs();
-        assert!(
-            diff < EPS,
-            "Assertion failed: {:?} != {:?} (diff: {})",
-            a,
-            b,
-            diff
-        );
-    }
-
-    fn assert_scalar_eq(a: Scalar, b: Scalar) {
-        let diff = (a - b).abs();
-        assert!(
-            diff < Scalar::new(EPS),
-            "Assertion failed: {:?} != {:?} (diff: {})",
-            a,
-            b,
-            diff
-        );
-    }
-
-    fn assert_vector_eq(a: Vector2, b: Vector2) {
-        let diff_e0 = (a - b)[0].abs();
-        let diff_e1 = (a - b)[1].abs();
-        assert!(
-            diff_e0 < EPS && diff_e1 < EPS,
-            "Assertion failed: {:?} != {:?}",
-            a,
-            b
-        )
-    }
-
     #[test]
     fn test_scalar_op() {
         let s1 = Scalar::new(1.0);
         let s2 = Scalar::new(3.0);
         let f = 3.0;
 
-        // Vector2 <op> Vector2
-        assert_scalar_eq(s1 + s2, Scalar::new(4.0));
-        assert_scalar_eq(s1 - s2, Scalar::new(-2.0));
+        assert_eq!(s1 + s2, Scalar::new(4.0), "Scalar + Scalar");
+        assert_eq!(s1 - s2, Scalar::new(-2.0), "Scalar - Scalar");
 
-        // Neg
-        assert_scalar_eq(-s1, Scalar::new(-1.0));
+        assert_eq!(-s1, Scalar::new(-1.0), "Scalar Neg");
 
-        // Mul with Scalar and f64
-        assert_scalar_eq(s1 * f, Scalar::new(3.0));
-        assert_scalar_eq(f * s1, Scalar::new(3.0));
+        assert_eq!(s1 * f, Scalar::new(3.0), "Scalar * f64");
+        assert_eq!(f * s1, Scalar::new(3.0), "f64 * Scalar");
 
-        // Div with Scalar and f64
-        assert_scalar_eq(s1 / f, Scalar::new(1.0 / 3.0));
+        assert_eq!(s1 / f, Scalar::new(1.0 / 3.0), "Scalar / f64");
     }
 
     #[test]
-    fn test_vector2_op() {
-        let v1 = Vector2::new([1.0, 2.0]);
-        let v2 = Vector2::new([3.0, 4.0]);
+    fn test_vector_op() {
+        let v1 = Vector::new([1.0, 2.0, 3.0]);
+        let v2 = Vector::new([3.0, 4.0, 5.0]);
         let f = 3.0;
 
-        // Vector2 <op> Vector2
-        assert_vector_eq(v1 + v2, Vector2::new([4.0, 6.0]));
-        assert_vector_eq(v1 - v2, Vector2::new([-2.0, -2.0]));
-        // assert_vector_eq(v1 * v2, Vector2::new([3.0, 8.0]));
+        assert_eq!(v1 + v2, Vector::new([4.0, 6.0, 8.0]), "Vector + Vector");
+        assert_eq!(v1 - v2, Vector::new([-2.0, -2.0, -2.0]), "Vector + Vector");
 
-        // Neg
-        assert_vector_eq(-v1, Vector2::new([-1.0, -2.0]));
+        assert_eq!(-v1, Vector::new([-1.0, -2.0, -3.0]), "Vector");
 
-        // Mul with Vector2 and f64
-        assert_vector_eq(v1 * f, Vector2::new([3.0, 6.0]));
-        assert_vector_eq(f * v1, Vector2::new([3.0, 6.0]));
+        assert_eq!(v1 * v2, 26.0, "Vector * Vector (Inner Product)");
+        assert_eq!(v1 * f, Vector::new([3.0, 6.0, 9.0]), "Vector * f64");
+        assert_eq!(f * v1, Vector::new([3.0, 6.0, 9.0]), "f64 * Vector");
 
-        // Div with Vector2 and f64
-        assert_vector_eq(v1 / f, Vector2::new([1.0 / 3.0, 2.0 / 3.0]));
+        assert_eq!(
+            v1 / f,
+            Vector::new([1.0 / 3.0, 2.0 / 3.0, 1.0]),
+            "Vector / f64"
+        );
     }
 
     #[test]
     fn test_vector_magnitude() {
-        let v = Vector2::new([3.0, 4.0]);
+        let v = Vector::new([3.0, 4.0]);
 
-        assert_f64_eq(v.magnitude(), 5.0);
-        assert_f64_eq(v.magnitude_square(), 25.0);
+        assert_eq!(v.magnitude_square(), 25.0, "Vector.magnitude_square()");
+        assert_eq!(v.magnitude(), 5.0, "Vector.magnitude()");
     }
 
     #[test]
     fn test_vector_normalize() {
-        let v1 = Vector2::new([3.0, 4.0]);
-        let v2 = Vector2::zero();
+        let v1 = Vector::new([3.0, 4.0]);
+        let v2 = Vector::zero();
 
         // Normalize
         let v1_normalized = v1.normalize();
-        assert_f64_eq(v1_normalized.magnitude(), 1.0);
-        assert_vector_eq(v1_normalized, Vector2::new([0.6, 0.8]));
+        assert_eq!(v1_normalized.magnitude(), 1.0, "Vector.normalize()");
+        assert_eq!(v1_normalized, Vector::new([0.6, 0.8]), "Vector.normalize()");
 
         let v2_normalized = v2.normalize();
-        assert_f64_eq(v2_normalized.magnitude(), 0.0);
-        assert_vector_eq(v2_normalized, Vector2::new([0.0, 0.0]));
+        assert_eq!(v2_normalized.magnitude(), 0.0, "Vector::zero().normalize()");
+        assert_eq!(
+            v2_normalized,
+            Vector::new([0.0, 0.0]),
+            "Vector::zero().normalize()"
+        );
     }
 
     #[test]
     fn test_inner_product() {
-        let v1 = Vector2::new([1.0, 0.0]);
-        let v2 = Vector2::new([0.0, 1.0]);
-        let v3 = Vector2::new([2.0, 2.0]);
+        let v1 = Vector::new([1.0, 0.0, 0.0]);
+        let v2 = Vector::new([0.0, 1.0, 0.0]);
+        let v3 = Vector::new([0.0, 0.0, 1.0]);
+        let v4 = Vector::new([2.0, 2.0, 0.0]);
 
-        // Orthogonal
-        assert_f64_eq(v1.inner_product(v2), 0.0);
+        assert_eq!(v1.inner_product(v2), 0.0, "Vector Inner Product");
+        assert_eq!(v2.inner_product(v3), 0.0, "Vector Inner Product");
+        assert_eq!(v3.inner_product(v1), 0.0, "Vector Inner Product");
 
-        // Parallel
-        assert_f64_eq(v1.inner_product(v3), 2.0);
+        assert_eq!(v1.inner_product(v4), 2.0, "Vector Inner Product");
 
-        // Self inner product
-        assert_f64_eq(v3.inner_product(v3), v3.magnitude_square());
+        assert_eq!(
+            v3.inner_product(v3),
+            v3.magnitude_square(),
+            "Vector Self Inner Product"
+        );
     }
 }
