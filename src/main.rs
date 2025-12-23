@@ -11,22 +11,21 @@ mod math {
     pub mod integrate;
 }
 
-use crate::math::core::{LinearSpace, Scalar};
 use crate::math::integrate::{RK4Method, Solver};
 use crate::utils::plot::plot_one;
 
 use crate::physics::harmonic_oscillator::DrivenHarmonicOscillator;
 
 fn main() {
-    let dho_ode: DrivenHarmonicOscillator = DrivenHarmonicOscillator {
+    let dho_ode = DrivenHarmonicOscillator {
         k: 16.0,
         b: 1.0,
         f0: 5.0,
         omega: 2.0,
     };
 
-    let y0 = Scalar::new(4.0);
-    let y0_prime = Scalar::new(0.0);
+    let y0 = 4.0;
+    let y0_prime = 0.0;
     let h = 0.01;
     let steps = 2000;
 

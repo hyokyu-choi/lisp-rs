@@ -1,4 +1,4 @@
-use crate::math::core::{LinearSpace, Scalar, ScalarSpace};
+use crate::math::core::LinearSpace;
 
 pub trait System {
     type Vector: LinearSpace + Copy;
@@ -137,7 +137,7 @@ where
     pub fn get_results_f64(
         &self,
     ) -> (
-        Vec<<Scalar as LinearSpace>::Data>,
+        Vec<<f64 as LinearSpace>::Data>,
         Vec<<S::Vector as LinearSpace>::Data>,
         Vec<<S::Vector as LinearSpace>::Data>,
     ) {
@@ -236,7 +236,7 @@ mod tests {
 
     /// y'' + y = 0
     impl System for TestHarmonicOscillator {
-        type Vector = Scalar;
+        type Vector = f64;
 
         fn derivative(&self, _t: f64, y: Self::Vector, _y_prime: Self::Vector) -> Self::Vector {
             -y
@@ -247,8 +247,8 @@ mod tests {
     fn test_euler_method() {
         let system = TestHarmonicOscillator;
         let method = EulerMethod;
-        let y0 = Scalar::new(1.0);
-        let y0_prime = Scalar::new(0.0);
+        let y0 = 1.0;
+        let y0_prime = 0.0;
         let h = 0.01;
         let steps = 100;
 
@@ -256,22 +256,18 @@ mod tests {
         test_solver.run(h, steps);
         let (_, y, _) = test_solver.get_current();
 
-        let exact_y = Scalar::new(1.0f64.cos());
+        let exact_y = 1.0f64.cos();
         let error = (y - exact_y).abs();
 
-        assert!(
-            error < Scalar::new(EPS),
-            "Euler method error too large: {}",
-            error
-        );
+        assert!(error < EPS, "Euler method error too large: {}", error);
     }
 
     #[test]
     fn test_rk4_method() {
         let system = TestHarmonicOscillator;
         let method = RK4Method;
-        let y0 = Scalar::new(1.0);
-        let y0_prime = Scalar::new(0.0);
+        let y0 = 1.0;
+        let y0_prime = 0.0;
         let h = 0.01;
         let steps = 100;
 
@@ -279,20 +275,16 @@ mod tests {
         test_solver.run(h, steps);
         let (_, y, _) = test_solver.get_current();
 
-        let exact_y = Scalar::new(1.0f64.cos());
+        let exact_y = 1.0f64.cos();
         let error = (y - exact_y).abs();
 
-        assert!(
-            error < Scalar::new(EPS),
-            "RK4 method error too large: {}",
-            error
-        );
+        assert!(error < EPS, "RK4 method error too large: {}", error);
     }
 
     #[test]
     fn test_rk4_better_than_euler() {
-        let y0 = Scalar::new(1.0);
-        let y0_prime = Scalar::new(0.0);
+        let y0 = 1.0;
+        let y0_prime = 0.0;
         let h = 0.1;
         let steps = 10;
 
@@ -308,7 +300,7 @@ mod tests {
         rk4_test_solver.run(h, steps);
         let (_, y_rk4, _) = rk4_test_solver.get_current();
 
-        let exact_y = Scalar::new(1.0f64.cos());
+        let exact_y = 1.0f64.cos();
         let error_euler = (y_euler - exact_y).abs();
         let error_rk4 = (y_rk4 - exact_y).abs();
 
