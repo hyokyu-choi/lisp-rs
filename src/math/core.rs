@@ -20,22 +20,27 @@ pub trait LinearSpace:
     fn get_data(&self) -> Self::Data;
 }
 
-pub trait ScalarSpace: LinearSpace {
+pub trait ScalarSpace: LinearSpace + Mul<Output = Self> {
+    fn one() -> Self;
+    fn get(&self) -> Self;
     fn abs_square(&self) -> f64;
     fn abs(&self) -> f64;
+    fn conj(&self) -> Self;
     fn sqrt(&self) -> Self;
     fn sin(&self) -> Self;
     fn cos(&self) -> Self;
 }
 
-pub trait InnerProduct: LinearSpace {
-    fn dot(&self, other: Self) -> f64;
+pub trait InnerProduct<S: ScalarSpace>: LinearSpace {
+    fn dot(&self, other: Self) -> S;
 }
 
-pub trait VectorSpace<L: LinearSpace, const N: usize>: InnerProduct + Index<usize> + IndexMut<usize> {
+pub trait VectorSpace<S: ScalarSpace, const N: usize>:
+    InnerProduct<S> + Index<usize> + IndexMut<usize>
+{
     type Value;
 
-    fn get(&self, index: usize) -> L;
+    fn get(&self, index: usize) -> S;
 
     fn magnitude(&self) -> f64;
     fn magnitude_square(&self) -> f64;
@@ -47,8 +52,8 @@ pub trait CrossProduct<const N: usize>: VectorSpace<f64, N> {
 }
 
 #[derive(Clone, Copy, PartialEq)]
-pub struct Vector<L: LinearSpace, const N: usize> {
-    data: [L; N],
+pub struct Vector<S: ScalarSpace, const N: usize> {
+    data: [S; N],
 }
 
 impl LinearSpace for f64 {
@@ -69,11 +74,20 @@ impl LinearSpace for f64 {
 }
 
 impl ScalarSpace for f64 {
+    fn one() -> Self {
+        1.0
+    }
+    fn get(&self) -> Self {
+        *self
+    }
     fn abs_square(&self) -> f64 {
         self * self
     }
     fn abs(&self) -> f64 {
         <f64>::abs(*self)
+    }
+    fn conj(&self) -> Self {
+        *self
     }
     fn sqrt(&self) -> Self {
         <f64>::sqrt(*self)
@@ -86,14 +100,14 @@ impl ScalarSpace for f64 {
     }
 }
 
-impl<const N: usize> LinearSpace for Vector<f64, N> {
-    type Data = [f64; N];
+impl<S: ScalarSpace, const N: usize> LinearSpace for Vector<S, N> {
+    type Data = [S; N];
 
     fn new(data: Self::Data) -> Self {
         Self { data: data }
     }
     fn zero() -> Self {
-        Self::new([0.0; N])
+        Self::new([S::zero(); N])
     }
     fn size(&self) -> usize {
         N
@@ -103,15 +117,15 @@ impl<const N: usize> LinearSpace for Vector<f64, N> {
     }
 }
 
-impl<const N: usize> VectorSpace<f64, N> for Vector<f64, N> {
-    type Value = f64;
+impl<S: ScalarSpace, const N: usize> VectorSpace<S, N> for Vector<S, N> {
+    type Value = S;
 
     fn get(&self, index: usize) -> Self::Value {
         self.data[index]
     }
 
     fn magnitude_square(&self) -> f64 {
-        self.data.iter().map(|e| e * e).sum()
+        self.data.iter().map(|e| e.abs_square()).sum()
     }
     fn magnitude(&self) -> f64 {
         self.magnitude_square().sqrt()
@@ -124,27 +138,27 @@ impl<const N: usize> VectorSpace<f64, N> for Vector<f64, N> {
     }
 }
 
-impl<L: LinearSpace, const N: usize> Index<usize> for Vector<L, N> {
-    type Output = L;
+impl<S: ScalarSpace, const N: usize> Index<usize> for Vector<S, N> {
+    type Output = S;
 
     fn index(&self, index: usize) -> &Self::Output {
         &self.data[index]
     }
 }
 
-impl<L: LinearSpace, const N: usize> IndexMut<usize> for Vector<L, N> {
+impl<S: ScalarSpace, const N: usize> IndexMut<usize> for Vector<S, N> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.data[index]
     }
 }
 
-impl<const N: usize> InnerProduct for Vector<f64, N> {
-    fn dot(&self, other: Self) -> f64 {
+impl<S: ScalarSpace, const N: usize> InnerProduct<S> for Vector<S, N> {
+    fn dot(&self, other: Self) -> S {
         self.data
             .iter()
             .zip(other.data.iter())
-            .map(|(e1, e2)| e1 * e2)
-            .sum()
+            .map(|(e1, e2)| *e1 * *e2)
+            .fold(S::zero(), |acc, val| acc + val)
     }
 }
 
@@ -160,19 +174,19 @@ impl CrossProduct<3> for Vector<f64, 3> {
     }
 }
 
-impl<const N: usize> fmt::Display for Vector<f64, N> {
+impl<S: ScalarSpace, const N: usize> fmt::Display for Vector<S, N> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Vector<{N}>{:?}", self.data)
     }
 }
 
-impl<const N: usize> fmt::Debug for Vector<f64, N> {
+impl<S: ScalarSpace, const N: usize> fmt::Debug for Vector<S, N> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Vector<{N}>{:?}", self.data)
     }
 }
 
-impl<L: LinearSpace, const N: usize> Neg for Vector<L, N> {
+impl<S: ScalarSpace, const N: usize> Neg for Vector<S, N> {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
@@ -182,7 +196,7 @@ impl<L: LinearSpace, const N: usize> Neg for Vector<L, N> {
     }
 }
 
-impl<L: LinearSpace, const N: usize> Add for Vector<L, N> {
+impl<S: ScalarSpace, const N: usize> Add for Vector<S, N> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -192,7 +206,7 @@ impl<L: LinearSpace, const N: usize> Add for Vector<L, N> {
     }
 }
 
-impl<L: LinearSpace, const N: usize> Sub for Vector<L, N> {
+impl<S: ScalarSpace, const N: usize> Sub for Vector<S, N> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -202,7 +216,7 @@ impl<L: LinearSpace, const N: usize> Sub for Vector<L, N> {
     }
 }
 
-impl<L: LinearSpace, const N: usize> Mul<f64> for Vector<L, N> {
+impl<S: ScalarSpace, const N: usize> Mul<f64> for Vector<S, N> {
     type Output = Self;
 
     fn mul(self, rhs: f64) -> Self::Output {
@@ -212,7 +226,7 @@ impl<L: LinearSpace, const N: usize> Mul<f64> for Vector<L, N> {
     }
 }
 
-impl<L: LinearSpace, const N: usize> Div<f64> for Vector<L, N> {
+impl<S: ScalarSpace, const N: usize> Div<f64> for Vector<S, N> {
     type Output = Self;
 
     fn div(self, rhs: f64) -> Self::Output {
@@ -222,10 +236,10 @@ impl<L: LinearSpace, const N: usize> Div<f64> for Vector<L, N> {
     }
 }
 
-impl<L: LinearSpace, const N: usize> Mul<Vector<L, N>> for f64 {
-    type Output = Vector<L, N>;
+impl<S: ScalarSpace, const N: usize> Mul<Vector<S, N>> for f64 {
+    type Output = Vector<S, N>;
 
-    fn mul(self, rhs: Vector<L, N>) -> Self::Output {
+    fn mul(self, rhs: Vector<S, N>) -> Self::Output {
         Self::Output {
             data: std::array::from_fn(|i| rhs.data[i] * self),
         }

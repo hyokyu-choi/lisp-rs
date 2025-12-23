@@ -9,6 +9,7 @@ mod physics {
 mod math {
     pub mod core;
     pub mod integrate;
+    pub mod matrix;
 }
 
 use crate::math::integrate::{RK4Method, Solver};

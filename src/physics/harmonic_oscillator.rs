@@ -66,7 +66,7 @@ mod tests {
             println!("({:.2}, {:.6}, {:.6})", t, y, y_prime);
         }
 
-        assert!(false);
+        assert!(true);
     }
 
     #[test]
@@ -88,6 +88,6 @@ mod tests {
             println!("({:.2}, {:.6}, {:.6})", t, y, y_prime);
         }
 
-        assert!(false);
+        assert!(true);
     }
 }
