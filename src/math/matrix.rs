@@ -120,7 +120,7 @@ impl<S: ScalarSpace, const N: usize, const M: usize> MatMul<Vector<S, M>> for Ma
         Self::Output::new(std::array::from_fn(|i| {
             self.data[i]
                 .iter()
-                .zip(rhs.get_data().iter())
+                .zip(rhs.as_array().iter())
                 .map(|(a, b)| *a * *b)
                 .fold(S::zero(), |acc, val| acc + val)
         }))
@@ -165,7 +165,7 @@ impl<S: ScalarSpace, const N: usize> MatMul<Vector<S, N>> for SquareMatrix<S, N>
         Self::Output::new(std::array::from_fn(|i| {
             self.data[i]
                 .iter()
-                .zip(rhs.get_data().iter())
+                .zip(rhs.as_array().iter())
                 .map(|(a, b)| *a * *b)
                 .fold(S::zero(), |acc, val| acc + val)
         }))

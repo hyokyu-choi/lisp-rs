@@ -56,6 +56,27 @@ pub struct Vector<S: ScalarSpace, const N: usize> {
     data: [S; N],
 }
 
+impl<S: ScalarSpace, const N: usize> Vector<S, N> {
+    pub fn as_array(&self) -> &[S; N] {
+        &self.data
+    }
+    pub fn as_slice(&self) -> &[S] {
+        &self.data
+    }
+}
+
+impl<S: ScalarSpace, const N: usize> AsRef<[S; N]> for Vector<S, N> {
+    fn as_ref(&self) -> &[S; N] {
+        &self.data
+    }
+}
+
+impl<S: ScalarSpace, const N: usize> AsRef<[S]> for Vector<S, N> {
+    fn as_ref(&self) -> &[S] {
+        &self.data
+    }
+}
+
 impl LinearSpace for f64 {
     type Data = f64;
 
@@ -123,7 +144,6 @@ impl<S: ScalarSpace, const N: usize> VectorSpace<S, N> for Vector<S, N> {
     fn get(&self, index: usize) -> Self::Value {
         self.data[index]
     }
-
     fn magnitude_square(&self) -> f64 {
         self.data.iter().map(|e| e.abs_square()).sum()
     }
