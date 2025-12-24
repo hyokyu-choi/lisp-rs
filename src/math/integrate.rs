@@ -180,6 +180,14 @@ where
 pub struct EulerMethod;
 pub struct RK4Method;
 
+/// Leapfrog Integration (Velocity Verlet)
+///
+/// Leapfrog integration is a method for 2nd-order ODEss without first derivatives.
+/// $$ y'' = f(t, y, _y') $$
+/// Stable for oscillatory motion.
+/// **System::derivative must not use y_prime in return.**
+pub struct LeapfrogMethod;
+
 impl Integrator for EulerMethod {
     fn step<S>(
         &mut self,
@@ -226,6 +234,27 @@ impl Integrator for RK4Method {
     }
 }
 
+impl Integrator for LeapfrogMethod {
+    fn step<S>(
+        &mut self,
+        system: &S,
+        t: f64,
+        y: S::Vector,
+        y_prime: S::Vector,
+        h: f64,
+    ) -> (S::Vector, S::Vector)
+    where
+        S: System,
+    {
+        let y_prime = y_prime + system.derivative(t, y, y_prime) * (h / 2.0);
+        let y = y + y_prime * h;
+        (
+            y,
+            y_prime + system.derivative(t + h, y, y_prime) * (h / 2.0),
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -265,13 +294,13 @@ mod tests {
     #[test]
     fn test_rk4_method() {
         let system = TestHarmonicOscillator;
-        let method = RK4Method;
+        let integrator = RK4Method;
         let y0 = 1.0;
         let y0_prime = 0.0;
         let h = 0.01;
         let steps = 100;
 
-        let mut test_solver = Solver::new(method, system, y0, y0_prime);
+        let mut test_solver = Solver::new(integrator, system, y0, y0_prime);
         test_solver.run(h, steps);
         let (_, y, _) = test_solver.get_current();
 
@@ -289,8 +318,8 @@ mod tests {
         let steps = 10;
 
         let system = TestHarmonicOscillator;
-        let euler = EulerMethod;
-        let mut euler_test_solver = Solver::new(euler, system, y0, y0_prime);
+        let integrator = EulerMethod;
+        let mut euler_test_solver = Solver::new(integrator, system, y0, y0_prime);
         euler_test_solver.run(h, steps);
         let (_, y_euler, _) = euler_test_solver.get_current();
 
@@ -310,5 +339,52 @@ mod tests {
             error_rk4,
             error_euler
         )
+    }
+
+    #[test]
+    fn test_leapfrog_energy_conservation() {
+        let system = TestHarmonicOscillator;
+        let integrator = LeapfrogMethod;
+
+        let y0 = 1.0;
+        let y0_prime = 0.0;
+        let h = 0.01;
+        let steps = 1000;
+
+        let initial_energy = 0.5 * y0_prime * y0_prime + 0.5 * y0 * y0;
+
+        let mut test_solver = Solver::new(integrator, system, y0, y0_prime);
+        test_solver.run(h, steps);
+        let (_, y, y_prime) = test_solver.get_current();
+
+        let final_energy = 0.5 * y_prime * y_prime + 0.5 * y * y;
+
+        let error = (final_energy - initial_energy).abs();
+        println!(
+            "Initial Energy: {}, Final Energy: {}, Error: {}",
+            initial_energy, final_energy, error
+        );
+
+        assert!(error < 1e-5, "LeapFrogMethod: Energy is not conserved");
+    }
+
+    #[test]
+    fn test_leapfrog_analytic_solution() {
+        let integrator = LeapfrogMethod;
+        let system = TestHarmonicOscillator;
+
+        let y0 = 1.0;
+        let y0_prime = 0.0;
+        let h = 0.01;
+        let steps = 100;
+
+        let mut test_solver = Solver::new(integrator, system, y0, y0_prime);
+        test_solver.run(h, steps);
+        let (_, y, _) = test_solver.get_current();
+
+        let exact_y = 1.0f64.cos();
+        let error = (y - exact_y).abs();
+
+        assert!(error < 1e-5, "Leapfrog method error too large: {}", error);
     }
 }
