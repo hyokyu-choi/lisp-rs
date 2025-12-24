@@ -71,9 +71,7 @@ impl<S: ScalarSpace, const N: usize> LinearSpace for SquareMatrix<S, N> {
     type Data = [[S; N]; N];
 
     fn new(data: Self::Data) -> Self {
-        Self {
-            data: data,
-        }
+        Self { data: data }
     }
     fn zero() -> Self {
         Self {
@@ -105,7 +103,9 @@ impl<S: ScalarSpace, const N: usize, const M: usize, const L: usize> MatMul<Matr
         }
     }
 }
-impl<S: ScalarSpace, const N: usize, const M: usize, const L: usize> Mul<Matrix<S, M, L>> for Matrix<S, N, M> {
+impl<S: ScalarSpace, const N: usize, const M: usize, const L: usize> Mul<Matrix<S, M, L>>
+    for Matrix<S, N, M>
+{
     type Output = Matrix<S, N, L>;
 
     fn mul(self, rhs: Matrix<S, M, L>) -> Self::Output {
@@ -327,6 +327,16 @@ impl<S: ScalarSpace, const N: usize, const M: usize> Mul<f64> for Matrix<S, N, M
     }
 }
 
+impl<S: ScalarSpace, const N: usize, const M: usize> Mul<Matrix<S, N, M>> for f64 {
+    type Output = Matrix<S, N, M>;
+
+    fn mul(self, rhs: Self::Output) -> Self::Output {
+        Self::Output {
+            data: std::array::from_fn(|i| std::array::from_fn(|j| rhs.data[i][j] * self)),
+        }
+    }
+}
+
 impl<S: ScalarSpace, const N: usize, const M: usize> Div<f64> for Matrix<S, N, M> {
     type Output = Self;
 
@@ -388,5 +398,63 @@ impl<S: ScalarSpace, const N: usize> Div<f64> for SquareMatrix<S, N> {
         Self::Output {
             data: std::array::from_fn(|i| std::array::from_fn(|j| self.data[i][j] / rhs)),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[allow(non_snake_case)]
+    fn test_matrix_op() {
+        let A = Matrix::new([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]);
+        let B = Matrix::new([[2.0, -2.0, 5.0], [1.0, -1.0, 3.0]]);
+        let v = Vector::new([2.0, 3.0, -1.0]);
+        let r = 3.0;
+
+        assert_eq!(
+            A + B,
+            Matrix::new([[3.0, 0.0, 8.0], [5.0, 4.0, 9.0]]),
+            "Matrix + Matrix"
+        );
+        assert_eq!(
+            A - B,
+            Matrix::new([[-1.0, 4.0, -2.0], [3.0, 6.0, 3.0]]),
+            "Matrix - Matrix"
+        );
+
+        assert_eq!(
+            -A,
+            Matrix::new([[-1.0, -2.0, -3.0], [-4.0, -5.0, -6.0]]),
+            "-Matrix"
+        );
+
+        assert_eq!(
+            A.matmul(B.transpose()),
+            Matrix::new([[13.0, 8.0], [28.0, 17.0]]),
+            "Matrix * Matrix (MatMul)"
+        );
+        assert_eq!(
+            A.matmul(v),
+            Vector::new([5.0, 17.0]),
+            "Matrix * Vector (MatMul)"
+        );
+        assert_eq!(
+            A * r,
+            Matrix::new([[3.0, 6.0, 9.0], [12.0, 15.0, 18.0]]),
+            "Matrix * f64"
+        );
+        assert_eq!(
+            r * A,
+            Matrix::new([[3.0, 6.0, 9.0], [12.0, 15.0, 18.0]]),
+            "f64 * Matrix"
+        );
+
+        assert_eq!(
+            A / r,
+            Matrix::new([[1.0 / 3.0, 2.0 / 3.0, 1.0], [4.0 / 3.0, 5.0 / 3.0, 2.0]]),
+            "Matrix / f64"
+        );
     }
 }
