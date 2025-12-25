@@ -22,10 +22,11 @@ pub trait LinearSpace:
 
 pub trait ScalarSpace: LinearSpace + Mul<Output = Self> + Div<Output = Self> {
     fn one() -> Self;
-    fn get(&self) -> Self;
     fn abs_square(&self) -> f64;
     fn abs(&self) -> f64;
     fn conj(&self) -> Self;
+    fn powi(&self, n: i32) -> Self;
+    fn powf(&self, n: f64) -> Self;
 }
 
 pub trait InnerProduct<S: ScalarSpace>: LinearSpace {
@@ -95,9 +96,6 @@ impl ScalarSpace for f64 {
     fn one() -> Self {
         1.0
     }
-    fn get(&self) -> Self {
-        *self
-    }
     fn abs_square(&self) -> f64 {
         self * self
     }
@@ -106,6 +104,12 @@ impl ScalarSpace for f64 {
     }
     fn conj(&self) -> Self {
         *self
+    }
+    fn powi(&self, n: i32) -> Self {
+        <f64>::powi(*self, n)
+    }
+    fn powf(&self, n: f64) -> Self {
+        <f64>::powf(*self, n)
     }
 }
 

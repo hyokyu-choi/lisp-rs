@@ -8,6 +8,7 @@ mod physics {
 }
 
 mod math {
+    pub mod complex;
     pub mod core;
     pub mod integrate;
     pub mod matrix;
