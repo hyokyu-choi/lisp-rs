@@ -1,7 +1,12 @@
 [package]
-name = "lisp"
+name = "fbi"
 version = "0.1.0"
 edition = "2024"
+description = "Field-based Boundary and Initial value problem simulator"
+readme = "README.md"
+repository = "https://github.com/hyokyu-choi/fbi-rs"
+categories = ["science", "simulation", "physics"]
+keywords = ["physics", "ode", "bvp", "ivp", "numerical-analysis"]
 
 [dependencies]
 plotters = "0.3.7"

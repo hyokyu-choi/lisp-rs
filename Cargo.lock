@@ -192,6 +192,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "fbi"
+version = "0.1.0"
+dependencies = [
+ "plotters",
+]
+
+[[package]]
 name = "fdeflate"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -390,13 +397,6 @@ checksum = "df15f6eac291ed1cf25865b1ee60399f57e7c227e7f51bdbd4c5270396a9ed50"
 dependencies = [
  "bitflags 2.10.0",
  "libc",
-]
-
-[[package]]
-name = "lisp"
-version = "0.1.0"
-dependencies = [
- "plotters",
 ]
 
 [[package]]
