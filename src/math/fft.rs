@@ -5,18 +5,18 @@ use crate::math::{
     core::{LinearSpace, Vector},
 };
 
-pub fn dft1d<const N: usize>(x_k: Vector<Complex, N>) -> Vector<Complex, N> {
+pub fn dft1d<const N: usize>(x_n: Vector<Complex, N>) -> Vector<Complex, N> {
     Vector::new(std::array::from_fn(|k| {
         (0..N).fold(Complex::zero(), |acc, n| {
-            acc + Complex::cis(-2.0 * PI * (k as f64) * (n as f64) / (N as f64)) * x_k[n]
+            acc + Complex::cis(-2.0 * PI * (k as f64) * (n as f64) / (N as f64)) * x_n[n]
         })
     }))
 }
 
-pub fn idft1d<const N: usize>(x_n: Vector<Complex, N>) -> Vector<Complex, N> {
+pub fn idft1d<const N: usize>(x_k: Vector<Complex, N>) -> Vector<Complex, N> {
     Vector::new(std::array::from_fn(|n| {
         (0..N).fold(Complex::zero(), |acc, k| {
-            acc + Complex::cis(2.0 * PI * (k as f64) * (n as f64) / (N as f64)) * x_n[k]
+            acc + Complex::cis(2.0 * PI * (k as f64) * (n as f64) / (N as f64)) * x_k[k]
         }) / (N as f64)
     }))
 }
