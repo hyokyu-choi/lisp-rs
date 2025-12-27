@@ -30,7 +30,7 @@ pub fn idft1d<const N: usize>(x_k: Vector<Complex, N>) -> Vector<Complex, N> {
 /// FFT with Cooley-Tukey algorithm
 ///
 /// using bit reverse for Radix-2 DIT divides
-pub fn fft1d<const N: usize>(mut x_n: Vector<Complex, N>) -> Vector<Complex, N> {
+pub fn fft1d<const N: usize>(x_n: &mut Vector<Complex, N>) {
     if N == 0 || (N & (N - 1)) != 0 {
         panic!("FFT length N must be a power of 2"); // TODO: Implement zero psort
     }
@@ -72,14 +72,12 @@ pub fn fft1d<const N: usize>(mut x_n: Vector<Complex, N>) -> Vector<Complex, N> 
         }
         len <<= 1;
     }
-
-    x_n
 }
 
 /// IFFT with Cooley-Tukey algorithm
 ///
 /// using bit reverse for Radix-2 DIT divides
-pub fn ifft1d<const N: usize>(mut x_k: Vector<Complex, N>) -> Vector<Complex, N> {
+pub fn ifft1d<const N: usize>(x_k: &mut Vector<Complex, N>) {
     if N == 0 || (N & (N - 1)) != 0 {
         panic!("IFFT length N must be a power of 2"); // TODO: Implement zero psort
     }
@@ -122,7 +120,11 @@ pub fn ifft1d<const N: usize>(mut x_k: Vector<Complex, N>) -> Vector<Complex, N>
         len <<= 1;
     }
 
-    x_k / (N as f64)
+    // Normalization
+    let inv_n = 1.0 / (N as f64);
+    for i in 0..N {
+        x_k[i] = x_k[i] * inv_n;
+    }
 }
 
 #[cfg(test)]
@@ -185,7 +187,7 @@ mod tests {
 
     #[test]
     fn test_fft1d() {
-        let x = Vector::new([
+        let mut x = Vector::new([
             Complex::zero(),
             Complex::one(),
             Complex::zero(),
@@ -197,13 +199,13 @@ mod tests {
             Complex::zero(),
             Complex::new(0.0, 2.0),
         ]);
-        let output = fft1d(x);
-        assert_complex_vector_eq(frequancy, output, "1D FFT")
+        fft1d(&mut x);
+        assert_complex_vector_eq(frequancy, x, "1D FFT")
     }
 
     #[test]
     fn test_ifft1d() {
-        let frequancy = Vector::new([
+        let mut frequancy = Vector::new([
             Complex::zero(),
             Complex::new(0.0, -2.0),
             Complex::zero(),
@@ -215,7 +217,7 @@ mod tests {
             Complex::zero(),
             -Complex::one(),
         ]);
-        let output = ifft1d(frequancy);
-        assert_complex_vector_eq(x, output, "1D IFFT");
+        ifft1d(&mut frequancy);
+        assert_complex_vector_eq(x, frequancy, "1D IFFT");
     }
 }
