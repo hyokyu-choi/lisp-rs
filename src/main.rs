@@ -11,6 +11,7 @@ mod math {
     pub mod complex;
     pub mod core;
     pub mod fft;
+    pub mod field;
     pub mod integrate;
     pub mod matrix;
 }
