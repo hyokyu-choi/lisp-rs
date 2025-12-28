@@ -7,7 +7,7 @@ use crate::math::{
 
 pub fn dft1d<const N: usize>(x_n: Vector<Complex, N>) -> Vector<Complex, N> {
     if N == 0 || (N & (N - 1)) != 0 {
-        panic!("DFT length N must be a power of 2"); // TODO: Implement zero psort
+        panic!("DFT length N must be a power of 2"); // TODO: Implement zero padding
     }
     Vector::new(std::array::from_fn(|k| {
         (0..N).fold(Complex::zero(), |acc, n| {
@@ -18,7 +18,7 @@ pub fn dft1d<const N: usize>(x_n: Vector<Complex, N>) -> Vector<Complex, N> {
 
 pub fn idft1d<const N: usize>(x_k: Vector<Complex, N>) -> Vector<Complex, N> {
     if N == 0 || (N & (N - 1)) != 0 {
-        panic!("IDFT length N must be a power of 2"); // TODO: Implement zero psort
+        panic!("IDFT length N must be a power of 2"); // TODO: Implement zero padding
     }
     Vector::new(std::array::from_fn(|n| {
         (0..N).fold(Complex::zero(), |acc, k| {
@@ -32,7 +32,7 @@ pub fn idft1d<const N: usize>(x_k: Vector<Complex, N>) -> Vector<Complex, N> {
 /// using bit reverse for Radix-2 DIT divides
 pub fn fft1d<const N: usize>(x_n: &mut Vector<Complex, N>) {
     if N == 0 || (N & (N - 1)) != 0 {
-        panic!("FFT length N must be a power of 2"); // TODO: Implement zero psort
+        panic!("FFT length N must be a power of 2"); // TODO: Implement zero padding
     }
     // Radix-2 DIT divides using bit reverse sort
     // 반대방향 bit 덧셈
@@ -79,7 +79,7 @@ pub fn fft1d<const N: usize>(x_n: &mut Vector<Complex, N>) {
 /// using bit reverse for Radix-2 DIT divides
 pub fn ifft1d<const N: usize>(x_k: &mut Vector<Complex, N>) {
     if N == 0 || (N & (N - 1)) != 0 {
-        panic!("IFFT length N must be a power of 2"); // TODO: Implement zero psort
+        panic!("IFFT length N must be a power of 2"); // TODO: Implement zero padding
     }
     // Divide and Conquer using bit reverse sort
     // 반대방향 bit 덧셈
