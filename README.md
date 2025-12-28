@@ -21,8 +21,8 @@
 - Boundary Value Problem
     - Numerical method
         - [ ] Finite Difference Method
-        - [ ] Discrite Fourier Transform
-        - [ ] FFT
+        - [x] Discrite Fourier Transform
+        - [x] FFT
     - [ ] Infinite potential well
     - [ ] Finite potential well
     - [ ] **Hydrogen atorm**
