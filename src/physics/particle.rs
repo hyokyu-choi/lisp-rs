@@ -1,37 +1,36 @@
-use crate::math_module::core::Scalar;
 use std::fmt;
 
 #[derive(Clone, Copy)]
 pub struct Particle {
-    mass: Scalar,
-    position: Scalar,
-    velocity: Scalar,
+    mass: f64,
+    position: f64,
+    velocity: f64,
 }
 
 impl Particle {
     pub fn new(m: f64, x: f64, v: f64) -> Self {
         Self {
-            mass: Scalar::new(m),
-            position: Scalar::new(x),
-            velocity: Scalar::new(v),
+            mass: m,
+            position: x,
+            velocity: v,
         }
     }
-    pub fn mass(&self) -> Scalar {
+    pub fn mass(&self) -> f64 {
         self.mass
     }
-    pub fn position(&self) -> Scalar {
+    pub fn position(&self) -> f64 {
         self.position
     }
-    pub fn velocity(&self) -> Scalar {
+    pub fn velocity(&self) -> f64 {
         self.velocity
     }
-    pub fn momentum(&self) -> Scalar {
+    pub fn momentum(&self) -> f64 {
         self.mass * self.velocity
     }
-    pub fn set_position(&mut self, x: Scalar) {
+    pub fn set_position(&mut self, x: f64) {
         self.position = x;
     }
-    pub fn set_velocity(&mut self, x: Scalar) {
+    pub fn set_velocity(&mut self, x: f64) {
         self.velocity = x;
     }
 }
