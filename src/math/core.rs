@@ -61,6 +61,9 @@ impl<L: LinearSpace, const N: usize> Vector<L, N> {
     pub fn as_slice(&self) -> &[L] {
         &self.data
     }
+    pub fn as_mut_slice(&mut self) -> &mut [L] {
+        &mut self.data
+    }
 }
 
 impl<L: LinearSpace, const N: usize> AsRef<[L; N]> for Vector<L, N> {
