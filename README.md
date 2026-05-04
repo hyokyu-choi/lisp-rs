@@ -16,21 +16,21 @@
         - [x] Leapfrog Method
     - Physics systems
         - [x] Damped Harmonic Oscillator (basic testbed)
-        - [ ] N-body particle system (basic gravitational interactions)
-            - [ ] Define `Particle` struct (position, velocity, mass)
-            - [ ] Implement gravitational force calculation between particles
-            - [ ] Integrate `NBodySystem` with `Solver`
+        - [x] N-body particle system (basic gravitational interactions)
+            - [x] Define `Particle` struct (position, velocity, mass)
+            - [x] Implement gravitational force calculation between particles
+            - [x] Integrate `NBodySystem` with `Solver`
 - Boundary Value Problem (Field Solutions for Gravity)
     - Numerical methods for Poisson's equation
         - [ ] Finite Difference Method
         - [x] Discrete Fourier Transform
         - [x] FFT
     - Applications
-        - [ ] Gravitational potential solver using FFT (for N-body)
-            - [ ] Discretize space into a grid
-            - [ ] Map particle masses to grid (density field)
-            - [ ] Implement FFT-based Poisson solver to get potential field
-            - [ ] Calculate gravitational force from potential field gradient
+        - [x] Gravitational potential solver using FFT (for N-body)
+            - [x] Discretize space into a grid
+            - [x] Map particle masses to grid (density field) using CIC
+            - [x] Implement FFT-based Poisson solver with Isolated Boundary (Hockney Method)
+            - [x] Calculate gravitational force from potential field gradient
 - Hybrid (Advanced Simulations)
     - [ ] Time-evolution N-body simulation using Poisson solver
         - [ ] Integrate particle dynamics with field solver in a time loop
@@ -38,17 +38,18 @@
     - [ ] General Relativity (future expansion)
 
 ## 📝 TODO for N-Body Simulation
-### Phase 1: 고수준 데이터 구조 및 3D 확장
-- [ ] `Particle` 구조체 3D 확장 (`Vector<f64, 3>` 사용)
-- [ ] `NBodyState<const N: usize>` 구현 (`LinearSpace` 트레이트 대응)
+### Phase 1: 고수준 데이터 구조 및 3D 확장 [DONE]
+- [x] `Particle` 구조체 3D 확장 (`Vector<f64, 3>` 사용)
+- [x] `NBodyState<const N: usize>` 구현 (`LinearSpace` 트레이트 대응)
 
-### Phase 2: 중력 모델 고도화
-- [ ] 직접 N-Body (Particle-Particle) 계산기 구현 (Softening Length 포함)
-- [ ] FFT 기반 PM (Particle-Mesh) 방식 `todo!()` 해결
-    - [ ] 질량 밀도 격자 매핑 (Mass-to-Grid)
-    - [ ] 필드 그래디언트 보간 (Field-to-Particle)
+### Phase 2: 중력 모델 고도화 [DONE]
+- [x] 직접 N-Body (Particle-Particle) 계산기 구현 (Softening Length 포함)
+- [x] FFT 기반 PM (Particle-Mesh) 방식 구현
+    - [x] 질량 밀도 격자 매핑 (Mass-to-Grid, CIC)
+    - [x] 필드 그래디언트 보간 (Field-to-Particle)
+    - [x] Isolated Boundary (Hockney-style Zero-padding)
 
-### Phase 3: 시스템 통합 및 검증
+### Phase 3: 시스템 통합 및 검증 [IN PROGRESS]
 - [ ] `NBodySystem` (`math::integrate::System`) 구현
 - [ ] 보존 법칙(에너지, 운동량) 검증 테스트 추가
 - [ ] 시뮬레이션 결과 시각화 데이터 출력 로직 강화
