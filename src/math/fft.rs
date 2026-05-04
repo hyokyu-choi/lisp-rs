@@ -260,4 +260,27 @@ mod tests {
         ];
         assert_complex_slice_eq(&expected, output.as_slice(), "1D DFT non-power-of-2");
     }
+
+    #[test]
+    fn test_ifft1d_non_pow2() {
+        // Input from the non-power-of-2 FFT test: FFT of [1, 1, 1] padded to 4
+        let frequancy = Vector::new([
+            Complex::new(3.0, 0.0),
+            Complex::new(0.0, -1.0),
+            Complex::new(1.0, 0.0),
+            Complex::new(0.0, 1.0), // This was the missing part
+        ]);
+        let output = ifft1d(&frequancy);
+        assert_eq!(output.len(), 4);
+
+        // Expected result is the original signal [1, 1, 1] zero-padded to 4
+        let expected = [
+            Complex::new(1.0, 0.0),
+            Complex::new(1.0, 0.0),
+            Complex::new(1.0, 0.0),
+            Complex::zero(),
+        ];
+        
+        assert_complex_slice_eq(&expected, &output, "1D IFFT non-power-of-2 (padded)");
+    }
 }
