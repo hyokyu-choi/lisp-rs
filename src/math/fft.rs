@@ -33,7 +33,7 @@ pub fn fft1d_slice(x: &mut [Complex]) {
     if n == 0 || (n & (n - 1)) != 0 {
         panic!("FFT length N must be a power of 2");
     }
-    
+
     // Bit-reversal permutation
     let mut j = 0;
     for i in 1..n {
@@ -137,11 +137,7 @@ mod tests {
 
     const EPS: f64 = 1e-14;
 
-    fn assert_complex_slice_eq(
-        a: &[Complex],
-        b: &[Complex],
-        msg: &str,
-    ) {
+    fn assert_complex_slice_eq(a: &[Complex], b: &[Complex], msg: &str) {
         assert_eq!(a.len(), b.len(), "{} (length mismatch)", msg);
         let result = a
             .iter()
@@ -225,14 +221,10 @@ mod tests {
 
     #[test]
     fn test_fft1d_non_pow2() {
-        let x = Vector::new([
-            Complex::one(),
-            Complex::one(),
-            Complex::one(),
-        ]);
+        let x = Vector::new([Complex::one(), Complex::one(), Complex::one()]);
         let output = fft1d(&x);
         assert_eq!(output.len(), 4); // Next power of 2
-        
+
         // Manual calculation for padded FFT of [1, 1, 1, 0]
         // X[0] = 3, X[1] = -i, X[2] = 1, X[3] = i
         let expected = [
@@ -246,18 +238,10 @@ mod tests {
 
     #[test]
     fn test_dft1d_non_pow2() {
-        let x = Vector::new([
-            Complex::one(),
-            Complex::one(),
-            Complex::one(),
-        ]);
+        let x = Vector::new([Complex::one(), Complex::one(), Complex::one()]);
         let output = dft1d(x);
         // DFT of [1, 1, 1] is [3, 0, 0]
-        let expected = [
-            Complex::new(3.0, 0.0),
-            Complex::zero(),
-            Complex::zero(),
-        ];
+        let expected = [Complex::new(3.0, 0.0), Complex::zero(), Complex::zero()];
         assert_complex_slice_eq(&expected, output.as_slice(), "1D DFT non-power-of-2");
     }
 
@@ -280,7 +264,7 @@ mod tests {
             Complex::new(1.0, 0.0),
             Complex::zero(),
         ];
-        
+
         assert_complex_slice_eq(&expected, &output, "1D IFFT non-power-of-2 (padded)");
     }
 }

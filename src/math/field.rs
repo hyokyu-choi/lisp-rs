@@ -50,7 +50,7 @@ pub trait Field {
 impl Field for Field3D {
     fn fft(&mut self) -> &mut Self {
         let n = self.n;
-        
+
         // 1. FFT along Z axis (contiguous)
         for x in 0..n {
             for y in 0..n {
@@ -90,7 +90,7 @@ impl Field for Field3D {
 
     fn ifft(&mut self) -> &mut Self {
         let n = self.n;
-        
+
         // 1. IFFT along Z axis (contiguous)
         for x in 0..n {
             for y in 0..n {
@@ -138,7 +138,7 @@ mod tests {
     fn test_field3d_reversibility() {
         let n = 4;
         let mut field = Field3D::new(n);
-        
+
         for x in 0..n {
             for y in 0..n {
                 for z in 0..n {
@@ -146,10 +146,10 @@ mod tests {
                 }
             }
         }
-        
+
         let original_val = field[[1, 2, 1]];
         field.fft().ifft();
-        
+
         let diff = (field[[1, 2, 1]].re() - original_val.re()).abs();
         assert!(diff < 1e-10, "Reversibility failed: diff {}", diff);
     }

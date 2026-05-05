@@ -4,8 +4,8 @@ mod utils {
 
 mod physics {
     pub mod constants;
-    pub mod harmonic_oscillator;
     pub mod gravity;
+    pub mod harmonic_oscillator;
     pub mod particle;
 }
 

@@ -1,3 +1,4 @@
+use crate::physics::constants::G;
 use crate::{
     math::{
         complex::{Complex, ComplexSpace},
@@ -7,7 +8,6 @@ use crate::{
     },
     physics::particle::{NBodyState, Particle},
 };
-use crate::physics::constants::G;
 use std::cell::RefCell;
 
 /// $O(N \log N)$ Particle-Mesh Gravity System
@@ -27,13 +27,7 @@ impl<const N: usize> PMSystem<N> {
     /// Helper to rebuild Particle objects from state for the solver
     fn get_particles(&self, y: NBodyState<N>, y_prime: NBodyState<N>) -> Vec<Particle> {
         (0..N)
-            .map(|i| {
-                Particle::new(
-                    self.masses[i],
-                    y.components[i],
-                    y_prime.components[i],
-                )
-            })
+            .map(|i| Particle::new(self.masses[i], y.components[i], y_prime.components[i]))
             .collect()
     }
 }
@@ -50,17 +44,22 @@ impl<const N: usize> System for PMSystem<N> {
         for i in 0..N {
             acc_components[i] = solver.get_acceleration(&particles[i]);
         }
-        
+
         NBodyState::new(acc_components)
     }
 }
 
 pub struct GravitationalPotential {
     pub n: usize,
-    pub x_min: f64, pub _x_max: f64,
-    pub y_min: f64, pub _y_max: f64,
-    pub z_min: f64, pub _z_max: f64,
-    pub dx: f64, pub dy: f64, pub dz: f64,
+    pub x_min: f64,
+    pub _x_max: f64,
+    pub y_min: f64,
+    pub _y_max: f64,
+    pub z_min: f64,
+    pub _z_max: f64,
+    pub dx: f64,
+    pub dy: f64,
+    pub dz: f64,
     pub density_field: Field3D,
     pub potential_field: Field3D,
     pub green_function: Field3D,
@@ -69,13 +68,16 @@ pub struct GravitationalPotential {
 impl GravitationalPotential {
     pub fn new(
         n_physical: usize,
-        x_min: f64, x_max: f64,
-        y_min: f64, y_max: f64,
-        z_min: f64, z_max: f64,
+        x_min: f64,
+        x_max: f64,
+        y_min: f64,
+        y_max: f64,
+        z_min: f64,
+        z_max: f64,
     ) -> Self {
         // Hockney's method: Total grid size N = 2 * n_physical (padded to power of 2)
         let n_total = (n_physical * 2).next_power_of_two();
-        
+
         let lx = x_max - x_min;
         let ly = y_max - y_min;
         let lz = z_max - z_min;
@@ -89,20 +91,33 @@ impl GravitationalPotential {
         let n = green_function.n;
 
         for i in 0..n {
-            let rx = if i <= n / 2 { i as f64 } else { (i as f64) - (n as f64) };
+            let rx = if i <= n / 2 {
+                i as f64
+            } else {
+                (i as f64) - (n as f64)
+            };
             let rx = rx * dx;
             for j in 0..n {
-                let ry = if j <= n / 2 { j as f64 } else { (j as f64) - (n as f64) };
+                let ry = if j <= n / 2 {
+                    j as f64
+                } else {
+                    (j as f64) - (n as f64)
+                };
                 let ry = ry * dy;
                 for k in 0..n {
-                    let rz = if k <= n / 2 { k as f64 } else { (k as f64) - (n as f64) };
+                    let rz = if k <= n / 2 {
+                        k as f64
+                    } else {
+                        (k as f64) - (n as f64)
+                    };
                     let rz = rz * dz;
 
                     let r_sq = rx * rx + ry * ry + rz * rz;
                     if r_sq > 0.0 {
                         green_function[[i, j, k]] = Complex::new(-G / r_sq.sqrt(), 0.0);
                     } else {
-                        green_function[[i, j, k]] = Complex::new(-G / (0.5 * (dx*dx + dy*dy + dz*dz).sqrt()), 0.0);
+                        green_function[[i, j, k]] =
+                            Complex::new(-G / (0.5 * (dx * dx + dy * dy + dz * dz).sqrt()), 0.0);
                     }
                 }
             }
@@ -110,12 +125,17 @@ impl GravitationalPotential {
 
         green_function.fft();
 
-        Self { 
+        Self {
             n,
-            x_min, _x_max: x_max,
-            y_min, _y_max: y_max,
-            z_min, _z_max: z_max,
-            dx, dy, dz,
+            x_min,
+            _x_max: x_max,
+            y_min,
+            _y_max: y_max,
+            z_min,
+            _z_max: z_max,
+            dx,
+            dy,
+            dz,
             density_field: Field3D::new(n),
             potential_field: Field3D::new(n),
             green_function,
@@ -132,14 +152,20 @@ impl GravitationalPotential {
     fn map_particle_to_grid(&mut self, p: &Particle) {
         let pos = p.position();
         let n = self.n;
-        
+
         // Offset N/4 assuming n_physical = n/2
         let offset = (n as f64) / 4.0;
         let u = (pos[0] - self.x_min) / self.dx + offset;
         let v = (pos[1] - self.y_min) / self.dy + offset;
         let w = (pos[2] - self.z_min) / self.dz + offset;
 
-        if u < 0.0 || u >= (n as f64) - 1.0 || v < 0.0 || v >= (n as f64) - 1.0 || w < 0.0 || w >= (n as f64) - 1.0 {
+        if u < 0.0
+            || u >= (n as f64) - 1.0
+            || v < 0.0
+            || v >= (n as f64) - 1.0
+            || w < 0.0
+            || w >= (n as f64) - 1.0
+        {
             return;
         }
 
@@ -152,14 +178,22 @@ impl GravitationalPotential {
         let dw = w - k as f64;
 
         let m = p.mass();
-        self.density_field[[i, j, k]] = self.density_field[[i, j, k]] + Complex::new(m * (1.0 - du) * (1.0 - dv) * (1.0 - dw), 0.0);
-        self.density_field[[i+1, j, k]] = self.density_field[[i+1, j, k]] + Complex::new(m * du * (1.0 - dv) * (1.0 - dw), 0.0);
-        self.density_field[[i, j+1, k]] = self.density_field[[i, j+1, k]] + Complex::new(m * (1.0 - du) * dv * (1.0 - dw), 0.0);
-        self.density_field[[i, j, k+1]] = self.density_field[[i, j, k+1]] + Complex::new(m * (1.0 - du) * (1.0 - dv) * dw, 0.0);
-        self.density_field[[i+1, j+1, k]] = self.density_field[[i+1, j+1, k]] + Complex::new(m * du * dv * (1.0 - dw), 0.0);
-        self.density_field[[i+1, j, k+1]] = self.density_field[[i+1, j, k+1]] + Complex::new(m * du * (1.0 - dv) * dw, 0.0);
-        self.density_field[[i, j+1, k+1]] = self.density_field[[i, j+1, k+1]] + Complex::new(m * (1.0 - du) * dv * dw, 0.0);
-        self.density_field[[i+1, j+1, k+1]] = self.density_field[[i+1, j+1, k+1]] + Complex::new(m * du * dv * dw, 0.0);
+        self.density_field[[i, j, k]] = self.density_field[[i, j, k]]
+            + Complex::new(m * (1.0 - du) * (1.0 - dv) * (1.0 - dw), 0.0);
+        self.density_field[[i + 1, j, k]] =
+            self.density_field[[i + 1, j, k]] + Complex::new(m * du * (1.0 - dv) * (1.0 - dw), 0.0);
+        self.density_field[[i, j + 1, k]] =
+            self.density_field[[i, j + 1, k]] + Complex::new(m * (1.0 - du) * dv * (1.0 - dw), 0.0);
+        self.density_field[[i, j, k + 1]] =
+            self.density_field[[i, j, k + 1]] + Complex::new(m * (1.0 - du) * (1.0 - dv) * dw, 0.0);
+        self.density_field[[i + 1, j + 1, k]] =
+            self.density_field[[i + 1, j + 1, k]] + Complex::new(m * du * dv * (1.0 - dw), 0.0);
+        self.density_field[[i + 1, j, k + 1]] =
+            self.density_field[[i + 1, j, k + 1]] + Complex::new(m * du * (1.0 - dv) * dw, 0.0);
+        self.density_field[[i, j + 1, k + 1]] =
+            self.density_field[[i, j + 1, k + 1]] + Complex::new(m * (1.0 - du) * dv * dw, 0.0);
+        self.density_field[[i + 1, j + 1, k + 1]] =
+            self.density_field[[i + 1, j + 1, k + 1]] + Complex::new(m * du * dv * dw, 0.0);
     }
 
     fn solve_poisson_eq(&mut self) {
@@ -183,13 +217,19 @@ impl GravitationalPotential {
     pub fn get_acceleration(&self, p: &Particle) -> Vector<f64, 3> {
         let pos = p.position();
         let n = self.n;
-        
+
         let offset = (n as f64) / 4.0;
         let u = (pos[0] - self.x_min) / self.dx + offset;
         let v = (pos[1] - self.y_min) / self.dy + offset;
         let w = (pos[2] - self.z_min) / self.dz + offset;
 
-        if u < 1.0 || u >= (n as f64) - 2.0 || v < 1.0 || v >= (n as f64) - 2.0 || w < 1.0 || w >= (n as f64) - 2.0 {
+        if u < 1.0
+            || u >= (n as f64) - 2.0
+            || v < 1.0
+            || v >= (n as f64) - 2.0
+            || w < 1.0
+            || w >= (n as f64) - 2.0
+        {
             return Vector::zero();
         }
 
@@ -202,20 +242,26 @@ impl GravitationalPotential {
         let dw = w - k as f64;
 
         let get_g = |i: usize, j: usize, k: usize| {
-            let gx = -(self.potential_field[[i+1, j, k]].re() - self.potential_field[[i-1, j, k]].re()) / (2.0 * self.dx);
-            let gy = -(self.potential_field[[i, j+1, k]].re() - self.potential_field[[i, j-1, k]].re()) / (2.0 * self.dy);
-            let gz = -(self.potential_field[[i, j, k+1]].re() - self.potential_field[[i, j, k-1]].re()) / (2.0 * self.dz);
+            let gx = -(self.potential_field[[i + 1, j, k]].re()
+                - self.potential_field[[i - 1, j, k]].re())
+                / (2.0 * self.dx);
+            let gy = -(self.potential_field[[i, j + 1, k]].re()
+                - self.potential_field[[i, j - 1, k]].re())
+                / (2.0 * self.dy);
+            let gz = -(self.potential_field[[i, j, k + 1]].re()
+                - self.potential_field[[i, j, k - 1]].re())
+                / (2.0 * self.dz);
             Vector::new([gx, gy, gz])
         };
 
         let g000 = get_g(i, j, k);
-        let g100 = get_g(i+1, j, k);
-        let g010 = get_g(i, j+1, k);
-        let g001 = get_g(i, j, k+1);
-        let g110 = get_g(i+1, j+1, k);
-        let g101 = get_g(i+1, j, k+1);
-        let g011 = get_g(i, j+1, k+1);
-        let g111 = get_g(i+1, j+1, k+1);
+        let g100 = get_g(i + 1, j, k);
+        let g010 = get_g(i, j + 1, k);
+        let g001 = get_g(i, j, k + 1);
+        let g110 = get_g(i + 1, j + 1, k);
+        let g101 = get_g(i + 1, j, k + 1);
+        let g011 = get_g(i, j + 1, k + 1);
+        let g111 = get_g(i + 1, j + 1, k + 1);
 
         let w000 = (1.0 - du) * (1.0 - dv) * (1.0 - dw);
         let w100 = du * (1.0 - dv) * (1.0 - dw);
@@ -226,8 +272,14 @@ impl GravitationalPotential {
         let w011 = (1.0 - du) * dv * dw;
         let w111 = du * dv * dw;
 
-        g000 * w000 + g100 * w100 + g010 * w010 + g001 * w001 + 
-        g110 * w110 + g101 * w101 + g011 * w011 + g111 * w111
+        g000 * w000
+            + g100 * w100
+            + g010 * w010
+            + g001 * w001
+            + g110 * w110
+            + g101 * w101
+            + g011 * w011
+            + g111 * w111
     }
 
     pub fn update(&mut self, ps: &[Particle]) {
@@ -292,14 +344,18 @@ mod tests {
         let p_central = Particle::new(m_central, Vector::new([8.0, 8.0, 8.0]), Vector::zero());
         let p_r2 = Particle::new(1.0, Vector::new([10.0, 8.0, 8.0]), Vector::zero());
         let p_r4 = Particle::new(1.0, Vector::new([12.0, 8.0, 8.0]), Vector::zero());
-        
+
         solver.update(&[p_central]);
         let acc_r2 = solver.get_acceleration(&p_r2).norm();
         let acc_r4 = solver.get_acceleration(&p_r4).norm();
-        
+
         let ratio = acc_r2 / acc_r4;
         println!("Acceleration ratio r=2 vs r=4 (expected ~4.0): {}", ratio);
-        assert!(ratio > 3.0, "Force must follow inverse square law. Ratio: {}", ratio);
+        assert!(
+            ratio > 3.0,
+            "Force must follow inverse square law. Ratio: {}",
+            ratio
+        );
     }
 
     #[test]
@@ -307,59 +363,59 @@ mod tests {
         let masses = [1000.0, 1000.0];
         let solver = GravitationalPotential::new(8, 0.0, 8.0, 0.0, 8.0, 0.0, 8.0);
         let system = PMSystem::new(masses, solver);
-        
+
         // Two particles at (3, 4, 4) and (5, 4, 4)
-        let pos = Vector::new([
-            Vector::new([3.0, 4.0, 4.0]),
-            Vector::new([5.0, 4.0, 4.0]),
-        ]);
+        let pos = Vector::new([Vector::new([3.0, 4.0, 4.0]), Vector::new([5.0, 4.0, 4.0])]);
         let vel = Vector::zero();
         let y = NBodyState::new(pos);
         let y_prime = NBodyState::new(vel);
-        
+
         let dy = system.derivative(0.0, y, y_prime);
-        
+
         // Acceleration should be non-zero and pulling towards each other
         // dy.components[0] is acceleration of particle 0
-        assert!(dy.components[0][0] > 0.0, "Particle 0 should accelerate towards Particle 1");
-        assert!(dy.components[1][0] < 0.0, "Particle 1 should accelerate towards Particle 0");
+        assert!(
+            dy.components[0][0] > 0.0,
+            "Particle 0 should accelerate towards Particle 1"
+        );
+        assert!(
+            dy.components[1][0] < 0.0,
+            "Particle 1 should accelerate towards Particle 0"
+        );
     }
 
     #[test]
     fn test_pm_system_orbit() {
-        use crate::math::integrate::{RK4Method, Integrator};
-        
+        use crate::math::integrate::{Integrator, RK4Method};
+
         // Two bodies with circular orbit
         // r = 2.0, m1 = m2 = 1000.0, v = sqrt(G*M/r) / 2?
         // Let's just check if it moves reasonably.
         let masses = [1000.0, 1000.0];
         let solver = GravitationalPotential::new(16, 0.0, 16.0, 0.0, 16.0, 0.0, 16.0);
         let system = PMSystem::new(masses, solver);
-        
-        let pos = Vector::new([
-            Vector::new([6.0, 8.0, 8.0]),
-            Vector::new([10.0, 8.0, 8.0]),
-        ]);
+
+        let pos = Vector::new([Vector::new([6.0, 8.0, 8.0]), Vector::new([10.0, 8.0, 8.0])]);
         // v = sqrt(G * 1000 / 4) approx sqrt(6.67 * 10^-11 * 1000 / 4) is very small
         // For testing, let's use a larger G or just check movement
         let vel = Vector::new([
             Vector::new([0.0, 0.0001, 0.0]),
             Vector::new([0.0, -0.0001, 0.0]),
         ]);
-        
+
         let mut y = NBodyState::new(pos);
         let mut y_prime = NBodyState::new(vel);
         let dt = 0.1;
         let mut integrator = RK4Method;
-        
+
         let initial_pos = y.components[0];
-        
+
         for _ in 0..10 {
             let (next_y, next_y_prime) = integrator.step(&system, 0.0, y, y_prime, dt);
             y = next_y;
             y_prime = next_y_prime;
         }
-        
+
         let final_pos = y.components[0];
         let dist_moved = (final_pos - initial_pos).norm();
         assert!(dist_moved > 0.0, "Particles should have moved");
@@ -367,43 +423,43 @@ mod tests {
 
     #[test]
     fn test_pm_system_conservation() {
-        use crate::math::integrate::{RK4Method, Integrator};
         use crate::math::core::VectorSpace;
-        
+        use crate::math::integrate::{Integrator, RK4Method};
+
         let masses = [1000.0, 1000.0];
         let solver = GravitationalPotential::new(16, 0.0, 16.0, 0.0, 16.0, 0.0, 16.0);
         let system = PMSystem::new(masses, solver);
-        
-        let pos = Vector::new([
-            Vector::new([6.0, 8.0, 8.0]),
-            Vector::new([10.0, 8.0, 8.0]),
-        ]);
+
+        let pos = Vector::new([Vector::new([6.0, 8.0, 8.0]), Vector::new([10.0, 8.0, 8.0])]);
         let vel = Vector::new([
             Vector::new([0.0, 0.0001, 0.0]),
             Vector::new([0.0, -0.0001, 0.0]),
         ]);
-        
+
         let mut y = NBodyState::new(pos);
         let mut y_prime = NBodyState::new(vel);
         let dt = 0.1;
         let mut integrator = RK4Method;
-        
-        let get_momentum = |v: NBodyState<2>| {
-            masses[0] * v.components[0] + masses[1] * v.components[1]
-        };
-        
+
+        let get_momentum =
+            |v: NBodyState<2>| masses[0] * v.components[0] + masses[1] * v.components[1];
+
         let initial_momentum = get_momentum(y_prime);
-        
+
         for _ in 0..10 {
             let (next_y, next_y_prime) = integrator.step(&system, 0.0, y, y_prime, dt);
             y = next_y;
             y_prime = next_y_prime;
         }
-        
+
         let final_momentum = get_momentum(y_prime);
         let mom_diff = (final_momentum - initial_momentum).norm();
-        
+
         // Momentum should be conserved (with small grid-induced error in PM)
-        assert!(mom_diff < 1e-9, "Momentum conservation failed: diff {}", mom_diff);
+        assert!(
+            mom_diff < 1e-9,
+            "Momentum conservation failed: diff {}",
+            mom_diff
+        );
     }
 }
