@@ -301,4 +301,109 @@ mod tests {
         println!("Acceleration ratio r=2 vs r=4 (expected ~4.0): {}", ratio);
         assert!(ratio > 3.0, "Force must follow inverse square law. Ratio: {}", ratio);
     }
+
+    #[test]
+    fn test_pm_system_derivative() {
+        let masses = [1000.0, 1000.0];
+        let solver = GravitationalPotential::new(8, 0.0, 8.0, 0.0, 8.0, 0.0, 8.0);
+        let system = PMSystem::new(masses, solver);
+        
+        // Two particles at (3, 4, 4) and (5, 4, 4)
+        let pos = Vector::new([
+            Vector::new([3.0, 4.0, 4.0]),
+            Vector::new([5.0, 4.0, 4.0]),
+        ]);
+        let vel = Vector::zero();
+        let y = NBodyState::new(pos);
+        let y_prime = NBodyState::new(vel);
+        
+        let dy = system.derivative(0.0, y, y_prime);
+        
+        // Acceleration should be non-zero and pulling towards each other
+        // dy.components[0] is acceleration of particle 0
+        assert!(dy.components[0][0] > 0.0, "Particle 0 should accelerate towards Particle 1");
+        assert!(dy.components[1][0] < 0.0, "Particle 1 should accelerate towards Particle 0");
+    }
+
+    #[test]
+    fn test_pm_system_orbit() {
+        use crate::math::integrate::{RK4Method, Integrator};
+        
+        // Two bodies with circular orbit
+        // r = 2.0, m1 = m2 = 1000.0, v = sqrt(G*M/r) / 2?
+        // Let's just check if it moves reasonably.
+        let masses = [1000.0, 1000.0];
+        let solver = GravitationalPotential::new(16, 0.0, 16.0, 0.0, 16.0, 0.0, 16.0);
+        let system = PMSystem::new(masses, solver);
+        
+        let pos = Vector::new([
+            Vector::new([6.0, 8.0, 8.0]),
+            Vector::new([10.0, 8.0, 8.0]),
+        ]);
+        // v = sqrt(G * 1000 / 4) approx sqrt(6.67 * 10^-11 * 1000 / 4) is very small
+        // For testing, let's use a larger G or just check movement
+        let vel = Vector::new([
+            Vector::new([0.0, 0.0001, 0.0]),
+            Vector::new([0.0, -0.0001, 0.0]),
+        ]);
+        
+        let mut y = NBodyState::new(pos);
+        let mut y_prime = NBodyState::new(vel);
+        let dt = 0.1;
+        let mut integrator = RK4Method;
+        
+        let initial_pos = y.components[0];
+        
+        for _ in 0..10 {
+            let (next_y, next_y_prime) = integrator.step(&system, 0.0, y, y_prime, dt);
+            y = next_y;
+            y_prime = next_y_prime;
+        }
+        
+        let final_pos = y.components[0];
+        let dist_moved = (final_pos - initial_pos).norm();
+        assert!(dist_moved > 0.0, "Particles should have moved");
+    }
+
+    #[test]
+    fn test_pm_system_conservation() {
+        use crate::math::integrate::{RK4Method, Integrator};
+        use crate::math::core::VectorSpace;
+        
+        let masses = [1000.0, 1000.0];
+        let solver = GravitationalPotential::new(16, 0.0, 16.0, 0.0, 16.0, 0.0, 16.0);
+        let system = PMSystem::new(masses, solver);
+        
+        let pos = Vector::new([
+            Vector::new([6.0, 8.0, 8.0]),
+            Vector::new([10.0, 8.0, 8.0]),
+        ]);
+        let vel = Vector::new([
+            Vector::new([0.0, 0.0001, 0.0]),
+            Vector::new([0.0, -0.0001, 0.0]),
+        ]);
+        
+        let mut y = NBodyState::new(pos);
+        let mut y_prime = NBodyState::new(vel);
+        let dt = 0.1;
+        let mut integrator = RK4Method;
+        
+        let get_momentum = |v: NBodyState<2>| {
+            masses[0] * v.components[0] + masses[1] * v.components[1]
+        };
+        
+        let initial_momentum = get_momentum(y_prime);
+        
+        for _ in 0..10 {
+            let (next_y, next_y_prime) = integrator.step(&system, 0.0, y, y_prime, dt);
+            y = next_y;
+            y_prime = next_y_prime;
+        }
+        
+        let final_momentum = get_momentum(y_prime);
+        let mom_diff = (final_momentum - initial_momentum).norm();
+        
+        // Momentum should be conserved (with small grid-induced error in PM)
+        assert!(mom_diff < 1e-9, "Momentum conservation failed: diff {}", mom_diff);
+    }
 }
